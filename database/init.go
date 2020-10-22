@@ -15,9 +15,9 @@ var engine *xorm.Engine
 // InitDriver 初始化数据库驱动
 func InitDriver() {
 	var connectErr error
-	dbPath := "lotter.db"
-	if os.Getenv("ProjectPWD") != "" {
-		dbPath = path.Join(os.Getenv("ProjectPWD"), dbPath)
+	dbPath := "lottery.db"
+	if v := os.Getenv("WORKSPACE"); v != "" {
+		dbPath = path.Join(v, dbPath)
 	}
 	engine, connectErr = xorm.NewEngine("sqlite3", dbPath)
 	engine.ShowSQL(true)
@@ -27,7 +27,7 @@ func InitDriver() {
 	if err := engine.Ping(); err != nil {
 		log.Fatal("数据库链接失败", err)
 	}
-	if err := engine.Sync2(new(schema.User)); err != nil {
+	if err := engine.Sync2(new(schema.User), new(schema.Setting), new(schema.Award), new(schema.LuckyPeople)); err != nil {
 		log.Fatal(err)
 	} else {
 		log.Println("同步数据库结构成功")

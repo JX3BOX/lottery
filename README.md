@@ -39,7 +39,7 @@ chmod +x build.sh
 
 修改文件 `lottery/conf/user.json`
 
-```json
+```js
 [
     {
         "name": "用户名",
@@ -55,7 +55,7 @@ chmod +x build.sh
 
 修改文件 `lottery/conf/award.json`
 
-```json
+```js
 [
     {
         "id": 1 , // 奖品id，不重复
@@ -78,7 +78,7 @@ chmod +x build.sh
 
 抽奖将按配置依次进行。
 
-```json
+```js
 [
     // 第一条配置表示，第一轮 从用户池1 抽取 奖品1 10个，奖品2 5个
     {

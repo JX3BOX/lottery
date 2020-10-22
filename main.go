@@ -42,12 +42,11 @@ func main() {
 		data.GenerateDemoData()
 	}
 
+	database.InitDriver()
 	if initData || InitData == "true" {
 		// 初始化用户数据和奖品数据
 		data.InitData()
 	}
-
-	database.InitDriver()
 
 	app := GetApp()
 
