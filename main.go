@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/huyinghuan/lottery/data"
+	"github.com/huyinghuan/lottery/database"
 	"github.com/kataras/iris/v12"
 )
 
@@ -22,24 +23,31 @@ func GetApp() *iris.Application {
 	return app
 }
 
-var InitData = false
+var InitData = ""
+var DemoData = ""
 
 func main() {
 	var port string
-	var initData bool
+	var initData, genDemoData bool
 	flag.StringVar(&port, "port", "", "端口号【生产环境可用】")
 	flag.BoolVar(&initData, "init", false, "初始化数据")
+	flag.BoolVar(&genDemoData, "demo", false, "生成测试用json配置")
 	flag.Parse()
 
 	log.Println("Program Version  : ", Version)
 	log.Println("Program BuildTime: ", BuildTime)
 	log.Println("Program Author   : ", "ec.huyinghuan@gmail.com")
 
-	if initData || InitData {
+	if genDemoData || DemoData == "true" {
+		data.GenerateDemoData()
+	}
+
+	if initData || InitData == "true" {
 		// 初始化用户数据和奖品数据
 		data.InitData()
-		return
 	}
+
+	database.InitDriver()
 
 	app := GetApp()
 

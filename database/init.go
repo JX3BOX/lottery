@@ -12,7 +12,8 @@ import (
 
 var engine *xorm.Engine
 
-func init() {
+// InitDriver 初始化数据库驱动
+func InitDriver() {
 	var connectErr error
 	dbPath := "lotter.db"
 	if os.Getenv("ProjectPWD") != "" {
@@ -32,4 +33,8 @@ func init() {
 		log.Println("同步数据库结构成功")
 	}
 	log.Println("数据库连接成功")
+}
+
+func Get() *xorm.Engine {
+	return engine
 }
