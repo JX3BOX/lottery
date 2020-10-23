@@ -14,7 +14,7 @@ func TestGetAllSettings(t *testing.T) {
 }
 
 func TestGetNextSetting(t *testing.T) {
-	one, err := GetNextSetting()
+	one, err := GetNextSetting(1)
 	if err != nil {
 		t.Fatal(err)
 	}

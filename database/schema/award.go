@@ -6,3 +6,7 @@ type Award struct {
 	Name  string `xorm:"'name'" json:"name"`
 	Image string `xorm:"'image'" json:"image"`
 }
+
+func (a Award) TableName() string {
+	return "award"
+}
