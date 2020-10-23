@@ -4,6 +4,7 @@ type SettingRule struct {
 	AwardId    int64  `json:"award_id"` // 奖品id
 	Count      int64  `json:"count"`    // 抽取个数
 	AwardImage string `json:"award_image"`
+	AwardName  string `json:"award_name"`
 }
 
 // 抽奖次数和每轮奖品设置

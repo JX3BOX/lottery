@@ -9,9 +9,10 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/huyinghuan/lottery/c"
+
 	"github.com/huyinghuan/lottery/data"
 	"github.com/huyinghuan/lottery/database"
-	"github.com/huyinghuan/lottery/database/v"
 	"github.com/kataras/iris/v12"
 )
 
@@ -27,41 +28,12 @@ func GetApp() *iris.Application {
 		// 禁止其他ip TODO
 		ctx.Next()
 	})
-	api.Get("/prepare/setting/{id:int64}", func(ctx iris.Context) {
-		id, _ := ctx.Params().GetInt64("id")
-		setting, err := v.GetNextSetting(id)
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(map[string]interface{}{
-				"code": 501,
-				"msg":  err.Error(),
-			})
-			return
-		}
-		if setting.ID == 0 {
-			ctx.JSON(map[string]interface{}{
-				"code": 404,
-				"msg":  "该抽奖规则不存在，或者已完成抽奖",
-			})
-			return
-		}
-		list, err := v.GetUserListByPool(setting.Pool)
-		if err != nil {
-			log.Println(err)
-			ctx.JSON(map[string]interface{}{
-				"code": 501,
-				"msg":  err.Error(),
-			})
-			return
-		}
-		ctx.JSON(map[string]interface{}{
-			"code": 0,
-			"data": map[string]interface{}{
-				"setting":  setting,
-				"userList": list,
-			},
-		})
-	})
+	api.Get("/setting/prepare/{id:int64}", c.PrepareSetting)
+	api.Get("/setting", c.GetAllSettings)
+	// 提交中奖名单
+	api.Post("/lucky-people", c.PostLuckyPeople)
+	// 获取中将名单
+	api.Get("/lucky-people/at/setting/{id:int64}", c.GetLuckPeopleList)
 	return app
 }
 

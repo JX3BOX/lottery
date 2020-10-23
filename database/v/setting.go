@@ -22,6 +22,7 @@ func formatRuleContent(content string) ([]schema.SettingRule, error) {
 			return rules, fmt.Errorf("找不到奖品 %d", rule.AwardId)
 		} else {
 			rule.AwardImage = award.Image
+			rule.AwardName = award.Name
 			rules[i] = rule
 		}
 	}
@@ -51,6 +52,21 @@ func GetAllSettings() (list []schema.Setting, err error) {
 func GetNextSetting(settingId int64) (setting schema.Setting, err error) {
 	db := database.Get()
 	_, err = db.Where("status = ?", 0).Where("id = ?", settingId).Get(&setting)
+	if setting.ID != 0 {
+		var rules []schema.SettingRule
+		rules, err = formatRuleContent(setting.RuleContent)
+		if err != nil {
+			return
+		}
+		setting.Rule = rules
+	}
+	return
+}
+
+// 获取一次抽奖规则
+func GetSetting(settingId int64) (setting schema.Setting, err error) {
+	db := database.Get()
+	_, err = db.Where("id = ?", settingId).Get(&setting)
 	if setting.ID != 0 {
 		var rules []schema.SettingRule
 		rules, err = formatRuleContent(setting.RuleContent)
