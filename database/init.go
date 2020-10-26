@@ -20,7 +20,7 @@ func InitDriver() {
 		dbPath = path.Join(v, dbPath)
 	}
 	engine, connectErr = xorm.NewEngine("sqlite3", dbPath)
-	engine.ShowSQL(true)
+	// engine.ShowSQL(true)
 	if connectErr != nil {
 		log.Fatal(connectErr)
 	}

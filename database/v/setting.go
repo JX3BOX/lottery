@@ -8,22 +8,18 @@ import (
 	"github.com/huyinghuan/lottery/database/schema"
 )
 
-func formatRuleContent(content string) ([]schema.SettingRule, error) {
+func formatRuleContent(content string, awardIDMap map[int64]schema.Award) ([]schema.SettingRule, error) {
 	var rules []schema.SettingRule
-	db := database.Get()
 	if e := json.Unmarshal([]byte(content), &rules); e != nil {
 		return rules, e
 	}
 	for i, rule := range rules {
-		var award schema.Award
-		if exist, err := db.Where("id = ?", rule.AwardId).Get(&award); err != nil {
-			return rules, err
-		} else if !exist {
-			return rules, fmt.Errorf("找不到奖品 %d", rule.AwardId)
-		} else {
+		if award, exists := awardIDMap[rule.AwardId]; exists {
 			rule.AwardImage = award.Image
 			rule.AwardName = award.Name
 			rules[i] = rule
+		} else {
+			return rules, fmt.Errorf("找不到奖品 %d", rule.AwardId)
 		}
 	}
 	return rules, nil
@@ -36,9 +32,14 @@ func GetAllSettings() (list []schema.Setting, err error) {
 	if err != nil {
 		return
 	}
+	var awardIDMap map[int64]schema.Award
+	awardIDMap, err = getAwardIDMap()
+	if err != nil {
+		return list, err
+	}
 	for i, item := range list {
 		var rules []schema.SettingRule
-		rules, err = formatRuleContent(item.RuleContent)
+		rules, err = formatRuleContent(item.RuleContent, awardIDMap)
 		if err != nil {
 			return
 		}
@@ -47,6 +48,18 @@ func GetAllSettings() (list []schema.Setting, err error) {
 	}
 	return
 }
+func getAwardIDMap() (map[int64]schema.Award, error) {
+	db := database.Get()
+	var awardList []schema.Award
+	if err := db.Find(&awardList); err != nil {
+		return nil, err
+	}
+	awardIDMap := make(map[int64]schema.Award)
+	for _, award := range awardList {
+		awardIDMap[award.ID] = award
+	}
+	return awardIDMap, nil
+}
 
 // 获取一次抽奖规则
 func GetNextSetting(settingId int64) (setting schema.Setting, err error) {
@@ -54,7 +67,12 @@ func GetNextSetting(settingId int64) (setting schema.Setting, err error) {
 	_, err = db.Where("status = ?", 0).Where("id = ?", settingId).Get(&setting)
 	if setting.ID != 0 {
 		var rules []schema.SettingRule
-		rules, err = formatRuleContent(setting.RuleContent)
+		var awardIDMap map[int64]schema.Award
+		awardIDMap, err = getAwardIDMap()
+		if err != nil {
+			return setting, err
+		}
+		rules, err = formatRuleContent(setting.RuleContent, awardIDMap)
 		if err != nil {
 			return
 		}
@@ -69,7 +87,12 @@ func GetSetting(settingId int64) (setting schema.Setting, err error) {
 	_, err = db.Where("id = ?", settingId).Get(&setting)
 	if setting.ID != 0 {
 		var rules []schema.SettingRule
-		rules, err = formatRuleContent(setting.RuleContent)
+		var awardIDMap map[int64]schema.Award
+		awardIDMap, err = getAwardIDMap()
+		if err != nil {
+			return setting, err
+		}
+		rules, err = formatRuleContent(setting.RuleContent, awardIDMap)
 		if err != nil {
 			return
 		}

@@ -47,6 +47,13 @@ func PostLuckyPeople(ctx iris.Context) {
 		})
 		return
 	}
+	if setting.Status == 1 {
+		ctx.JSON(map[string]interface{}{
+			"code": 405,
+			"msg":  "本次抽奖已完成，无法重复抽奖",
+		})
+		return
+	}
 	code := 0
 	msg := ""
 	for _, luckRule := range form.LuckyRule {
@@ -55,7 +62,7 @@ func PostLuckyPeople(ctx iris.Context) {
 		for _, rule := range setting.Rule {
 			if luckRule.AwardId == rule.AwardId {
 				matchAward = true
-				if int64(len(luckRule.UserIdList)) <= rule.Count {
+				if len(luckRule.UserIdList) <= rule.Count {
 					matchCount = true
 				}
 				break
@@ -108,7 +115,7 @@ func PostLuckyPeople(ctx iris.Context) {
 
 	ctx.JSON(map[string]interface{}{
 		"code": 0,
-		"msg":  fmt.Sprintf("本次抽奖人数为:%d", count),
+		"msg":  fmt.Sprintf("本次中奖人数为:%d", count),
 		"data": map[string]interface{}{
 			"effect": count,
 		},
