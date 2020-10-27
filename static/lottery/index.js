@@ -1,111 +1,188 @@
-// 单个用户数据体
-class UserBlock {
+class GameBlock {
     constructor(x, y, vx, vy, bg, data) {
+        this.color = ["#0052cc", "#cb22e5", "#8ee524", "#7de89d", "#fcd58d", "#db85d5", "#e2a878", "#239bba", "#e542f7"];
         this.x = x;
         this.y = y;
         this.vx = vx;
         this.vy = vy;
-        this.bg = bg;
-        this.__data = data;
+        this.bg = this.getRandomColor();
+        this.data = data;
+        this.id = data.id;
+        this.g = (Math.random() * 5 + 0.1) / 100;
+    }
+    getRandomColor() {
+        return this.color[Math.floor(Math.random() * this.color.length)];
     }
 }
-
-class Screen {
-    constructor(canvas, userList){
-        this.screenWidth = 1920
-        this.screenHeight = 1080
-        this.itemWidth = 40 // 每个元素宽度
-        this.itemHeight = 40 // 每个元素高度
-        this.countOfItemInRunningAtAnyTime = 10
+class GameScreen {
+    constructor(canvas, userList, setting) {
+        this.stopped = false;
+        this.itemWidth = 40;
+        this.itemHeight = 40;
+        this.countOfItemInRunningAtAnyTime = 30;
+        this.newCountPeerSecond = 15;
+        this.runningStore = new Map();
+        this.preparePool = [];
+        this.fixedBlock = new Map();
         this.canvas = canvas;
-        // 字典化,用于统计已经出现的用户信息
-        this.userMap = {}
-        this.userPool = []
-        this.initUserPool(userList)
+        this.countOfItemInRunningAtAnyTime = setting.countOfItemInRunningAtAnyTime;
+        this.newCountPeerSecond = setting.newCountPeerSecond;
+        this.initUserPool(userList);
     }
-
-    initUserPool(userList){
-        // 初速度
-        const initVy = -20
+    shuffle(list) {
+        var m = list.length;
+        var t, i;
+        while (m) {
+            i = Math.floor(Math.random() * m--);
+            t = list[m];
+            list[m] = list[i];
+            list[i] = t;
+        }
+        return list;
+    }
+    initUserPool(userList) {
+        userList = this.shuffle(userList);
+        const initVy = Math.floor(Math.random() * 10);
         for (let i = 0; i < userList.length; i++) {
-            // 位置随机
-            let x = Math.floor((this.screenWidth - this.itemWidth)*Math.random())
-            this.userPool.push(new UserBlock(x, this.screenHeight - this.itemHeight), 0, initVy, "", userList[i])
+            let x = Math.floor((this.canvas.width - this.itemWidth) * Math.random());
+            this.preparePool.push(new GameBlock(x, 0 - this.itemHeight, 0, initVy, "", userList[i]));
         }
     }
-    start(){
-        let currentRunPool = []
-        // 运动数量小于总数
-        if(this.countOfItemInRunningAtAnyTime < this.userPool.length){
-            let i = 0
+    pickInitRunItems() {
+        if (this.countOfItemInRunningAtAnyTime < this.preparePool.length) {
+            let i = 0;
             while (i < this.countOfItemInRunningAtAnyTime) {
-                const idx = Math.floor(this.userPool.length*Math.random())
-                // 防止重复
-                if(this.userMap[idx]){
-                    continue
-                }
-                currentRunPool.push(this.userPool[idx])
-                this.userMap[idx] = true
-                i++
+                let item = this.preparePool.shift();
+                this.runningStore.set(item.id, item);
+                i++;
             }
-        }else{
-            // 运动数量小于总数
-            this.userPool.forEach((item)=>{
-                currentRunPool.push(item)
-            })
         }
-
-        this.animal(currentRunPool)
-
-     //   requestAnimationFrame()
+        else {
+            this.preparePool.forEach((item) => {
+                this.runningStore.set(item.id, item);
+            });
+            this.preparePool = [];
+        }
     }
-    computeEveryItemPosition() {
-
+    start() {
+        this.pickInitRunItems();
+        this.addNewItemAtTime = Date.now();
+        this.animal(Date.now());
     }
-    //
-    animal(itemList){
-        const ctx = this.canvas.getContext("2d")
-        ctx.clearRect(0, 0, this.screenWidth, this.screenHeight)
-
-        this.computeEveryItemPosition()
-        requestAnimationFrame(()=>{
-            this.animal(itemList)
-        })
+    stop(pickCountList) {
+        this.stopped = true;
+        let listOnScreen = [];
+        for (let key of this.runningStore.keys()) {
+            let item = this.runningStore.get(key);
+            if (item.x > 0 && item.y > 0 && item.y < this.canvas.height) {
+                listOnScreen.push(item);
+            }
+        }
+        listOnScreen = this.shuffle(listOnScreen);
+        const luckyUserList = [];
+        let start = 0;
+        for (let i = 0; i < pickCountList.length; i++) {
+            let list = listOnScreen.slice(start, start + pickCountList[i]);
+            let q = [];
+            list.forEach((item) => {
+                q.push(item.data);
+            });
+            luckyUserList.push(q);
+            start = pickCountList[i];
+        }
+        return luckyUserList;
+    }
+    computeEveryItemPositionAndDrawIt(runTimeInterval) {
+        const ctx = this.canvas.getContext("2d");
+        const keys = this.runningStore.keys();
+        for (let key of keys) {
+            let item = this.runningStore.get(key);
+            if (item.x > this.canvas.width || item.x < 0 - this.itemWidth || item.y > this.canvas.height) {
+                this.runningStore.delete(key);
+                item.x = Math.floor((this.canvas.width - this.itemWidth) * Math.random());
+                item.y = 0 - this.itemHeight;
+                item.vy = Math.floor(Math.random() * 3);
+                this.preparePool.push(item);
+                continue;
+            }
+            ctx.fillStyle = item.bg;
+            ctx.beginPath();
+            ctx.arc(item.x + this.itemWidth / 2, item.y + this.itemHeight / 2, this.itemWidth / 2, 0, 2 * Math.PI);
+            ctx.closePath();
+            ctx.fill();
+            item.y += item.vy;
+            item.x += item.vx;
+            item.vy += item.g * runTimeInterval;
+            this.runningStore.set(item.id, item);
+        }
+        if (Date.now() - this.addNewItemAtTime < 200 + Math.random() * 800) {
+            return;
+        }
+        this.preparePool = this.shuffle(this.preparePool);
+        this.addNewItemAtTime = Date.now();
+        let needAddNewItem = this.newCountPeerSecond;
+        if (needAddNewItem >= this.preparePool.length) {
+            this.preparePool.forEach((item) => {
+                this.runningStore.set(item.id, item);
+            });
+            this.preparePool = [];
+            return;
+        }
+        while (needAddNewItem > 0) {
+            let item = this.preparePool.shift();
+            this.runningStore.set(item.id, item);
+            needAddNewItem--;
+        }
+    }
+    animal(lastTime) {
+        const ctx = this.canvas.getContext("2d");
+        ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        const now = Date.now();
+        const runTimeInterval = now - lastTime;
+        this.computeEveryItemPositionAndDrawIt(runTimeInterval);
+        requestAnimationFrame(() => {
+            if (this.stopped) {
+                return;
+            }
+            this.animal(now);
+        });
     }
 }
-
-
-
-// Setup 1 获取用户
 async function prepareSetting(id) {
-    return fetch("/api/prepare/setting/" + id).then((response) => {
+    return fetch("/api/setting/prepare/" + id).then((response) => {
         if (response.status == 200) {
-            return response.json()
+            return response.json();
         }
-        throw new Error(response.statusText)
+        throw new Error(response.statusText);
     }).then((data) => {
         if (data.code == 0) {
-            return data.data
+            return data.data;
         }
-        throw new Error(`code:${data.code}, msg:${data.msg}`)
-    })
+        throw new Error(`code:${data.code}, msg:${data.msg}`);
+    });
 }
-
+var game;
 async function main() {
-
     const urlParams = new URLSearchParams(location.search.substring(1));
-    const params = Object.fromEntries(urlParams);
-
-    const id = params.id
-    if (id == "") {
-        alert("没有该抽奖规则!!")
-        return
+    const id = urlParams.get("id");
+    if (!id) {
+        alert("没有该抽奖规则!!");
+        return;
     }
-
+    let setting = await prepareSetting(id);
+    console.log(setting);
     const screenDom = document.getElementById('screen');
-    const screen = new Screen(screenDom, [1,2,3,4,5,7,8,9])
-    // Setup 1 获取用户 和抽奖 配置
-   // let setting = await prepareSetting(id)
-    // 生成动画item池
-    //generateUserBlockPool(screen, [1,2,3,4,5,7,8,9])
+    game = new GameScreen(screenDom, setting.userList, {
+        countOfItemInRunningAtAnyTime: 30,
+        newCountPeerSecond: 15
+    });
+    game.start();
 }
+function stopGame() {
+    if (game) {
+        let list = game.stop([10]);
+        console.log(list);
+    }
+}
+main();
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiaW5kZXguanMiLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJpbmRleC50cyJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFNQSxNQUFNLFNBQVM7SUFTWCxZQUFZLENBQVMsRUFBRSxDQUFTLEVBQUUsRUFBVSxFQUFFLEVBQVUsRUFBRSxFQUFVLEVBQUUsSUFBVztRQVd6RSxVQUFLLEdBQUcsQ0FBQyxTQUFTLEVBQUUsU0FBUyxFQUFFLFNBQVMsRUFBRSxTQUFTLEVBQUUsU0FBUyxFQUFFLFNBQVMsRUFBRSxTQUFTLEVBQUUsU0FBUyxFQUFFLFNBQVMsQ0FBQyxDQUFBO1FBVi9HLElBQUksQ0FBQyxDQUFDLEdBQUcsQ0FBQyxDQUFDO1FBQ1gsSUFBSSxDQUFDLENBQUMsR0FBRyxDQUFDLENBQUM7UUFDWCxJQUFJLENBQUMsRUFBRSxHQUFHLEVBQUUsQ0FBQztRQUNiLElBQUksQ0FBQyxFQUFFLEdBQUcsRUFBRSxDQUFDO1FBQ2IsSUFBSSxDQUFDLEVBQUUsR0FBRyxJQUFJLENBQUMsY0FBYyxFQUFFLENBQUM7UUFDaEMsSUFBSSxDQUFDLElBQUksR0FBRyxJQUFJLENBQUM7UUFDakIsSUFBSSxDQUFDLEVBQUUsR0FBRyxJQUFJLENBQUMsRUFBRSxDQUFDO1FBQ2xCLElBQUksQ0FBQyxDQUFDLEdBQUcsQ0FBQyxJQUFJLENBQUMsTUFBTSxFQUFFLEdBQUcsQ0FBQyxHQUFHLEdBQUcsQ0FBQyxHQUFHLEdBQUcsQ0FBQTtJQUM1QyxDQUFDO0lBR08sY0FBYztRQUNsQixPQUFPLElBQUksQ0FBQyxLQUFLLENBQUMsSUFBSSxDQUFDLEtBQUssQ0FBQyxJQUFJLENBQUMsTUFBTSxFQUFFLEdBQUcsSUFBSSxDQUFDLEtBQUssQ0FBQyxNQUFNLENBQUMsQ0FBQyxDQUFBO0lBQ3BFLENBQUM7Q0FDSjtBQU9ELE1BQU0sVUFBVTtJQVNaLFlBQVksTUFBeUIsRUFBRSxRQUFzQixFQUFFLE9BQXNCO1FBUjdFLFlBQU8sR0FBWSxLQUFLLENBQUM7UUFDekIsY0FBUyxHQUFX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
