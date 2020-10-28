@@ -14,8 +14,8 @@ class GameBlock {
     public id: number
     public g: number
 
-    public targetX: number
-    public targetY: number
+    public targetX: number = 0
+    public targetY: number = 0
 
 
     constructor(x: number, y: number, vx: number, vy: number, bg: string, data: IUser) {
@@ -69,7 +69,7 @@ class EndAnimation {
         let marginX = 10
         let marginY = 10
         let totalSize = this.fixedBlock.size
-        let addRow = totalSize % columnCount == 0 ? 0 : 1
+        let addRow = totalSize % columnCount === 0 ? 0 : 1
         let rowCount = Math.floor(totalSize / columnCount) + addRow
 
 
@@ -86,15 +86,12 @@ class EndAnimation {
 
             // 该元素位于第几行
             let currentRowIndex = Math.floor(i / columnCount)
-            console.log(currentRowIndex)
             // 设置元素 的目标位置
             item.targetX = startX + i * (this.itemWidth + marginX)
             item.targetY = startY + currentRowIndex * (this.itemWidth + marginX)
 
             item.vx = (item.targetX - item.x) / (fps * runTime)
             item.vy = (item.targetY - item.y) / (fps * runTime)
-            // this.fixedBlock.set(key, item)
-            console.log(item)
             i++
 
         }
@@ -137,7 +134,7 @@ class EndAnimation {
                     item.vy = 0
                 }
             }
-            if (item.vy == 0 && item.vx == 0) {
+            if (item.vy === 0 && item.vx === 0) {
                 this.fixedBlock.delete(key)
                 this.hasStopBlock.push(item)
             }
@@ -165,7 +162,7 @@ class EndAnimation {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.draw()
         requestAnimationFrame(() => {
-            if (this.fixedBlock.size == 0) {
+            if (this.fixedBlock.size === 0) {
                 return
             }
             this.run()
@@ -175,7 +172,7 @@ class EndAnimation {
     }
 }
 
-class GameScreen {
+export class GameScreen {
     private stopped: boolean = false;
     private itemWidth: number = 40 // 每个元素宽度
     private itemHeight: number = 40 // 每个元素高度
@@ -224,7 +221,13 @@ class GameScreen {
         if (this.countOfItemInRunningAtAnyTime < this.preparePool.length) {
             let i = 0
             while (i < this.countOfItemInRunningAtAnyTime) {
+                if (this.preparePool.length === 0) {
+                    break
+                }
                 let item = this.preparePool.shift()
+                if (!item) {
+                    continue
+                }
                 this.runningStore.set(item.id, item)
                 i++
             }
@@ -236,7 +239,7 @@ class GameScreen {
             this.preparePool = []
         }
     }
-    private addNewItemAtTime: number
+    private addNewItemAtTime: number = 0
     start() {
         this.pickInitRunItems()
         this.addNewItemAtTime = Date.now()
@@ -250,6 +253,9 @@ class GameScreen {
         let listOnScreen: Array<GameBlock> = []
         for (let key of this.runningStore.keys()) {
             let item = this.runningStore.get(key)
+            if (!item) {
+                continue
+            }
             // 在屏幕内的元素
             if (item.x > 0 && item.y > 0 && item.y < this.canvas.height) {
                 listOnScreen.push(item)
@@ -283,6 +289,7 @@ class GameScreen {
         const keys = this.fixedBlock.keys()
         for (let key of keys) {
             let item = this.fixedBlock.get(key)
+            if (!item) { continue }
             ctx.fillStyle = item.bg
             ctx.beginPath();
             ctx.arc(item.x + this.itemWidth / 2, item.y + this.itemHeight / 2, this.itemWidth / 2, 0, 2 * Math.PI)
@@ -370,60 +377,11 @@ class GameScreen {
 
         this.computeEveryItemPositionAndDrawIt(runTimeInterval)
         requestAnimationFrame(() => {
-            if (this.runningStore.size == 0) {
+            if (this.runningStore.size === 0) {
                 new EndAnimation(this.canvas, this.fixedBlock, { width: this.itemWidth, height: this.itemHeight })
                 return
             }
             this.animation(now)
         })
     }
-
-
 }
-
-
-
-// Setup 1 获取用户
-async function prepareSetting(id: string) {
-    return fetch("/api/setting/prepare/" + id).then((response) => {
-        if (response.status == 200) {
-            return response.json()
-        }
-        throw new Error(response.statusText)
-    }).then((data) => {
-        if (data.code == 0) {
-            return data.data
-        }
-        throw new Error(`code:${data.code}, msg:${data.msg}`)
-    })
-}
-var game: GameScreen
-async function main() {
-    const urlParams = new URLSearchParams(location.search.substring(1));
-    const id = urlParams.get("id");
-    if (!id) {
-        alert("没有该抽奖规则!!")
-        return
-    }
-    // Setup 1 获取用户 和抽奖 配置
-    let setting = await prepareSetting(id)
-    console.log(setting)
-    const screenDom = <HTMLCanvasElement>document.getElementById('screen');
-    game = new GameScreen(screenDom, setting.userList, {
-        countOfItemInRunningAtAnyTime: 30,
-        newCountPeerSecond: 15,
-        pickCountList: [10]
-    })
-    game.start()
-    // Setup 1 获取用户 和抽奖 配置
-    // let setting = await prepareSetting(id)
-    // 生成动画item池
-    //generateUserBlockPool(screen, [1,2,3,4,5,7,8,9])
-}
-function stopGame() {
-    if (game) {
-        let list = game.stop()
-        console.log(list)
-    }
-}
-main()

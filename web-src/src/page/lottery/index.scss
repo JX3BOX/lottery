@@ -1,0 +1,26 @@
+.screen{
+    width: 100%;
+    height: 100%;
+    position: relative;
+    .screen-cover{
+        position: absolute;
+        top:0;
+        left:0;
+        width: 100%;
+        height: 100%;
+        background-image: url("./image/cover.png");
+        .screen-title{
+            width: 1025px;
+            height: 246px;
+            margin: 0 auto;
+            background-image: url("./image/title.png");
+        }
+    }
+    .stage{
+       position: absolute;
+       top: 112px;
+       left: 132px;
+       width: 1664px;
+       height: 874px;
+    }
+}
