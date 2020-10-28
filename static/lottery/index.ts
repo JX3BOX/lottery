@@ -305,7 +305,7 @@ class GameScreen {
             // x 轴超出,  因为不计算反弹，那么y只能朝下方超出边界
             if (item.x > this.canvas.width || item.x < 0 - this.itemWidth || item.y > this.canvas.height) {
                 this.runningStore.delete(key)
-                // 重置x, y位置,vy速度
+                // 重置x, y位置, vy速度
                 item.x = Math.floor((this.canvas.width - this.itemWidth) * Math.random())
                 item.y = 0 - this.itemHeight
                 item.vy = Math.floor(Math.random() * 3)
