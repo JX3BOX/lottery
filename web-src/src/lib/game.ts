@@ -17,6 +17,7 @@ class GameBlock {
     public targetX: number = 0
     public targetY: number = 0
 
+    public degrees: number
 
     constructor(x: number, y: number, vx: number, vy: number, bg: string, data: IUser) {
         this.x = x;
@@ -27,6 +28,7 @@ class GameBlock {
         this.data = data;
         this.id = data.id;
         this.g = (Math.random() * 5 + 0.1) / 100
+        this.degrees = 0
     }
     // 测试使用
     private color = ["#0052cc", "#cb22e5", "#8ee524", "#7de89d", "#fcd58d", "#db85d5", "#e2a878", "#239bba", "#e542f7"]
@@ -39,6 +41,7 @@ interface IGameSettings {
     countOfItemInRunningAtAnyTime: number // 初始运动的个数
     newCountPeerSecond: number // 每秒新增的元素个数
     pickCountList: Array<number>
+    asserts: Map<string, HTMLImageElement>
 }
 
 
@@ -47,10 +50,12 @@ class EndAnimation {
     private canvas: HTMLCanvasElement
     private itemWidth: number
     private itemHeight: number
-    constructor(canvas: HTMLCanvasElement, fixedBlockMap: Map<number, GameBlock>, setting: { width: number, height: number }) {
+    private asserts: Map<string, HTMLImageElement>
+    constructor(canvas: HTMLCanvasElement, fixedBlockMap: Map<number, GameBlock>, setting: { width: number, height: number, asserts: Map<string, HTMLImageElement> }) {
         this.itemWidth = setting.width
         this.itemHeight = setting.height
         this.fixedBlock = fixedBlockMap
+        this.asserts = setting.asserts
         this.canvas = canvas
         this.calculateFixedBlockRunParms()
         this.run()
@@ -111,7 +116,10 @@ class EndAnimation {
             // 更新位置
             item.y += item.vy
             item.x += item.vx
-
+            item.degrees = item.degrees + Math.PI * 2 / 60
+            if (item.degrees > Math.PI * 2) {
+                item.degrees = item.degrees - Math.PI * 2
+            }
             if (item.vx > 0) {
                 if (item.x >= item.targetX) {
                     item.x = item.targetX
@@ -137,23 +145,53 @@ class EndAnimation {
             if (item.vy === 0 && item.vx === 0) {
                 this.fixedBlock.delete(key)
                 this.hasStopBlock.push(item)
+            } else {
+                // 画头像
+                const demo = this.asserts.get("demo")
+                ctx.drawImage(demo, 0, 0, demo.width, demo.height, item.x + this.itemWidth / 4, item.y + this.itemHeight / 4, this.itemWidth / 2, this.itemHeight / 2)
+
+                ctx.save()
+                // 移动原点中心位置
+                ctx.translate(item.x + this.itemWidth / 2, item.y + this.itemWidth / 2)
+                // 旋转
+                ctx.rotate(item.degrees)
+
+                const itemBg = this.asserts.get("itemBg")
+                ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * this.itemWidth / 2, -1 * this.itemWidth / 2, this.itemWidth, this.itemHeight)
+                ctx.restore()
             }
 
-            // drawItem
-            ctx.fillStyle = item.bg
-            ctx.beginPath();
-            ctx.arc(item.x + this.itemWidth / 2, item.y + this.itemHeight / 2, this.itemWidth / 2, 0, 2 * Math.PI)
-            ctx.closePath();
-            ctx.fill();
+
 
         }
+        // ** img 规定要使用的图像、画布或视频。
+        // ** sx 可选。开始剪切的 x 坐标位置。
+        // ** sy 可选。开始剪切的 y 坐标位置。
+        // ** swidth 可选。被剪切图像的宽度。
+        // ** sheight 可选。被剪切图像的高度。
+        // ** x 在画布上放置图像的 x 坐标位置。
+        // ** y 在画布上放置图像的 y 坐标位置。
+        // ** width 可选。要使用的图像的宽度。（伸展或缩小图像）
+        // ** height 可选。要使用的图像的高度。（伸展或缩小图像）
         // 绘制已经停止的元素
         this.hasStopBlock.forEach((item) => {
-            ctx.fillStyle = item.bg
-            ctx.beginPath();
-            ctx.arc(item.x + this.itemWidth / 2, item.y + this.itemHeight / 2, this.itemWidth / 2, 0, 2 * Math.PI)
-            ctx.closePath();
-            ctx.fill();
+            item.degrees = item.degrees + Math.PI * 2 / 60
+            if (item.degrees > Math.PI * 2) {
+                item.degrees = item.degrees - Math.PI * 2
+            }
+            // 画头像
+            const demo = this.asserts.get("demo")
+            ctx.drawImage(demo, 0, 0, demo.width, demo.height, item.x + this.itemWidth / 4, item.y + this.itemHeight / 4, this.itemWidth / 2, this.itemHeight / 2)
+            // 画遮罩
+            ctx.save()
+            // 移动原点
+            ctx.translate(item.x + this.itemWidth / 2, item.y + this.itemWidth / 2)
+            // 旋转
+            ctx.rotate(item.degrees)
+            const itemBg = this.asserts.get("itemBg")
+            ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * this.itemWidth / 2, -1 * this.itemWidth / 2, this.itemWidth, this.itemHeight)
+
+            ctx.restore()
         })
     }
     // 将选择的对象，排列规则
@@ -162,9 +200,9 @@ class EndAnimation {
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.draw()
         requestAnimationFrame(() => {
-            if (this.fixedBlock.size === 0) {
-                return
-            }
+            // if (this.fixedBlock.size === 0) {
+            //     return
+            // }
             this.run()
         })
 
@@ -174,22 +212,37 @@ class EndAnimation {
 
 export class GameScreen {
     private stopped: boolean = false;
-    private itemWidth: number = 40 // 每个元素宽度
-    private itemHeight: number = 40 // 每个元素高度
-    private countOfItemInRunningAtAnyTime: number = 30 // 初始运动的个数
+    private itemWidth: number = 80 // 每个元素宽度
+    private itemHeight: number = 80 // 每个元素高度
+    private countOfItemInRunningAtAnyTime: number = 20 // 初始运动的个数
     private newCountPeerSecond = 15 // 每秒新增的元素个数
     private canvas: HTMLCanvasElement
     private runningStore: Map<number, GameBlock> = new Map<number, GameBlock>()//  存储当前运动的元素
     private preparePool: Array<GameBlock> = []
     private pickCountList: Array<number> = []
+    private asserts: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>()
     constructor(canvas: HTMLCanvasElement, userList: Array<IUser>, setting: IGameSettings) {
         this.canvas = canvas
 
         this.countOfItemInRunningAtAnyTime = setting.countOfItemInRunningAtAnyTime
         this.newCountPeerSecond = setting.newCountPeerSecond
         this.pickCountList = setting.pickCountList
+        this.asserts = setting.asserts
         this.initUserPool(userList)
     }
+    // 加载资源
+    async loadAsserts() {
+        new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = function () {
+                return resolve()
+            }
+            img.src = '../../Content/images/mayday.jpg';
+        })
+
+    }
+
+
     // 打乱数组 洗牌
     private shuffle(list: Array<any>) {
         var m = list.length
@@ -290,11 +343,23 @@ export class GameScreen {
         for (let key of keys) {
             let item = this.fixedBlock.get(key)
             if (!item) { continue }
-            ctx.fillStyle = item.bg
-            ctx.beginPath();
-            ctx.arc(item.x + this.itemWidth / 2, item.y + this.itemHeight / 2, this.itemWidth / 2, 0, 2 * Math.PI)
-            ctx.closePath();
-            ctx.fill();
+            item.degrees = item.degrees + Math.PI * 2 / 60
+            if (item.degrees > Math.PI * 2) {
+                item.degrees = item.degrees - Math.PI * 2
+            }
+            // 画头像
+            const demo = this.asserts.get("demo")
+            ctx.drawImage(demo, 0, 0, demo.width, demo.height, item.x + this.itemWidth / 4, item.y + this.itemHeight / 4, this.itemWidth / 2, this.itemHeight / 2)
+
+            ctx.save()
+            // 移动原点中心位置
+            ctx.translate(item.x + this.itemWidth / 2, item.y + this.itemWidth / 2)
+            // 旋转
+            ctx.rotate(item.degrees)
+
+            const itemBg = this.asserts.get("itemBg")
+            ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * this.itemWidth / 2, -1 * this.itemWidth / 2, this.itemWidth, this.itemHeight)
+            ctx.restore()
         }
     }
 
@@ -316,22 +381,34 @@ export class GameScreen {
                 item.x = Math.floor((this.canvas.width - this.itemWidth) * Math.random())
                 item.y = 0 - this.itemHeight
                 item.vy = Math.floor(Math.random() * 3)
+                item.degrees = 0
                 // 移除去等元素重新加入待选取池
                 this.preparePool.push(item)
 
                 continue
             }
-            // drawItem
-            ctx.fillStyle = item.bg
-            ctx.beginPath();
-            ctx.arc(item.x + this.itemWidth / 2, item.y + this.itemHeight / 2, this.itemWidth / 2, 0, 2 * Math.PI)
-            ctx.closePath();
-            ctx.fill();
+            // 画头像
+            const demo = this.asserts.get("demo")
+            ctx.drawImage(demo, 0, 0, demo.width, demo.height, item.x + this.itemWidth / 4, item.y + this.itemHeight / 4, this.itemWidth / 2, this.itemHeight / 2)
+
+            ctx.save()
+            // 移动原点中心位置
+            ctx.translate(item.x + this.itemWidth / 2, item.y + this.itemWidth / 2)
+            // 旋转
+            ctx.rotate(item.degrees)
+
+            const itemBg = this.asserts.get("itemBg")
+            ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * this.itemWidth / 2, -1 * this.itemWidth / 2, this.itemWidth, this.itemHeight)
+            ctx.restore()
 
             // 更新位置
             item.y += item.vy
             item.x += item.vx
             item.vy += item.g * runTimeInterval;
+            item.degrees = item.degrees + Math.PI * 2 / 60
+            if (item.degrees > Math.PI * 2) {
+                item.degrees = item.degrees - Math.PI * 2
+            }
             // this.runningStore.set(item.id, item)
         }
 
@@ -378,7 +455,7 @@ export class GameScreen {
         this.computeEveryItemPositionAndDrawIt(runTimeInterval)
         requestAnimationFrame(() => {
             if (this.runningStore.size === 0) {
-                new EndAnimation(this.canvas, this.fixedBlock, { width: this.itemWidth, height: this.itemHeight })
+                new EndAnimation(this.canvas, this.fixedBlock, { width: this.itemWidth, height: this.itemHeight, asserts: this.asserts })
                 return
             }
             this.animation(now)

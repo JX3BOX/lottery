@@ -30,6 +30,17 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
             alert("获取抽奖规则错误:" + e.message)
         })
     }
+    async loadImage(url: string): Promise<HTMLImageElement> {
+        console.log("正在加载资源:" + url)
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.src = url;
+            img.onload = function () {
+                return resolve(img)
+            };
+            img.onerror = () => reject(new Error(`load ${url} fail`));
+        })
+    }
     async componentDidMount() {
         this.listenUserAction()
         const screenDom = this.myRef.current as HTMLCanvasElement
@@ -39,11 +50,18 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
         } catch (e) {
             return
         }
+        const asserts = new Map<string, HTMLImageElement>()
 
+        const itemBg: HTMLImageElement = await this.loadImage("/item-bg.png")
+        asserts.set("itemBg", itemBg)
+        const demoAvatar: HTMLImageElement = await this.loadImage("/demo.png")
+        asserts.set("demo", demoAvatar)
+        console.log("资源加载完成！")
         this.game = new GameScreen(screenDom, setting.userList, {
             countOfItemInRunningAtAnyTime: 30,
             newCountPeerSecond: 15,
-            pickCountList: [10]
+            pickCountList: [10],
+            asserts: asserts
         })
     }
     // 监听键盘事件
