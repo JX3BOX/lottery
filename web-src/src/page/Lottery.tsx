@@ -63,6 +63,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
             pickCountList: [10],
             asserts: asserts
         })
+        this.game.start()
     }
     // 监听键盘事件
     listenUserAction() {
@@ -79,12 +80,12 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
                     }
                     break
                 // 回车键滚动屏幕
-                case "Enter":
-                    if (!hasStop && this.game && !hasStart) {
-                        hasStart = true
-                        this.game.start()
-                    }
-                    break
+                // case "Enter":
+                //     if (!hasStop && this.game && !hasStart) {
+                //         hasStart = true
+                //         this.game.start()
+                //     }
+                //     break
                 // Esc键回到首页
                 case "Escape":
                     document.body.removeEventListener("keyup", action)

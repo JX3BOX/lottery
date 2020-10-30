@@ -6,15 +6,11 @@
 
 ### window
 
-直接双击运行 `init.exe` 然后 双击 `app.exe`.
-
-重置抽奖双击 `init.exe`
+直接双击运行 双击 `app.exe`.
 
 ### `linux`或`mac`
 
-终端执行 `./app --init` 然后 `./app`
-
-重置抽奖: `./app --init`
+终端执行 `./app` 
 
 
 ## 二次开发
@@ -25,7 +21,6 @@
 ```shell
 chmod +x build.sh 
 ./build.sh
-./app --init #初始化配置文件
 ./app #运行抽奖服务
 ```
 
@@ -102,3 +97,7 @@ chmod +x build.sh
     }
 ]
 ```
+
+## License
+
+MIT
