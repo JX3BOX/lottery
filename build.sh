@@ -10,9 +10,9 @@ rm -rf release
 mkdir -p release/linux
 mkdir -p release/mac
 mkdir -p release/win64
-env GOOS=windows GOARCH=amd64  go build -o release/win64/app.exe -mod=vendor -ldflags="-X '$argsVersion' -X '$argsBuildTime'"
-env GOOS=linux GOARCH=amd64   go build -o release/linux/app -mod=vendor -ldflags="-X '$argsVersion' -X '$argsBuildTime'"
-env GOOS=darwin GOARCH=amd64  go build -o release/mac/app -mod=vendor -ldflags="-X '$argsVersion' -X '$argsBuildTime'"
+env CGO_ENABLED=1   CXX=x86_64-w64-mingw32-g++ CC=x86_64-w64-mingw32-gcc GOOS=windows GOARCH=amd64  go build -o release/win64/app.exe -mod=vendor -ldflags="-X '$argsVersion' -X '$argsBuildTime'"
+env CGO_ENABLED=1 GOOS=linux GOARCH=amd64   go build -o release/linux/app -mod=vendor -ldflags="-X '$argsVersion' -X '$argsBuildTime'"
+#env CGO_ENABLED=1  CC=clang GOOS=darwin GOARCH=amd64  go build -o release/mac/app -mod=vendor -ldflags="-X '$argsVersion' -X '$argsBuildTime'"
 cd web-src
 yarn install
 yarn build
