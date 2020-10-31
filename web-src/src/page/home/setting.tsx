@@ -1,16 +1,16 @@
 
 import React from 'react';
-import { Table, Space } from "antd"
-import { Link } from "react-router-dom"
-interface IProps { }
+import { Table, Space, Tag, Button } from "antd"
+import { withRouter, RouteComponentProps } from "react-router-dom"
+
 interface IState {
     settingList: Array<SettingItem>
 }
 interface SettingItem {
 
 }
-export default class Component extends React.Component<IProps, IState> {
-    constructor(props: IProps) {
+class Component extends React.Component<RouteComponentProps, IState> {
+    constructor(props) {
         super(props)
         this.state = {
             settingList: []
@@ -38,27 +38,59 @@ export default class Component extends React.Component<IProps, IState> {
     }
     private columns = [
         {
+            title: "序号",
+            dataIndex: "index",
+            render: (t, r, idx) => { return idx + 1 }
+        },
+        {
             title: '用户池',
             dataIndex: 'pool',
         },
         {
-            title: '是否已完成',
+            title: '奖品配置',
+            dataIndex: 'rule',
+            render: (value) => {
+                var tagColor = ["magenta", "red", "orange", "cyan", "blue"]
+                return <>
+                    {value.map((tag, index) => {
+                        let color = tagColor[index % tagColor.length]
+                        return (
+                            <Tag color={color} key={index}>
+                                {`${tag.award_name} ${tag.count}`}
+                            </Tag>
+                        );
+                    })}
+                </>
+            }
+        },
+        {
+            title: '抽奖已完成',
             dataIndex: 'status',
             render: (value) => { return value === 0 ? "否" : "是" }
         }, {
             title: '操作',
             key: 'action',
             render: (text, record) => {
-                return record.status === 0 ? (<Space size="middle" >
-                    <Link to={{ pathname: `/lottery/${record.id}` }}>抽奖</Link>
-                    <a onClick={() => { this.resetSetting(record.id) }}>重置</a>
-                </Space>) : <Space size="middle" >
-                        <a onClick={() => { this.resetSetting(record.id) }}>重置</a>
+                return record.status === 0 ? (
+                    <Space size="middle" >
+                        <Button type="link" onClick={() => { this.goto(`/lottery/${record.id}`) }}>去抽奖</Button>
+                    </Space>) :
+                    (<Space size="middle" >
+                        <Button type="link" onClick={() => { this.resetSetting(record.id) }}>重置[todo]</Button>
                     </Space>
+                    )
             }
         },
     ]
+    goto(url) {
+        this.props.history.push(url)
+    }
+    genDemoData() {
+
+    }
     render() {
-        return <Table dataSource={this.state.settingList} columns={this.columns} rowKey="id" />;
+        return <Table dataSource={this.state.settingList} columns={this.columns} rowKey="id" />
     }
 }
+
+export default withRouter(Component)

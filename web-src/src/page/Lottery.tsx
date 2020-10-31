@@ -2,6 +2,7 @@ import React from 'react';
 import { RouteComponentProps, withRouter } from "react-router-dom";
 import { GameScreen } from "../lib/game"
 import "./lottery/index.scss"
+import { loadAsserts } from "../lib/utils"
 interface RouterProps {
     settingId: string;   // This one is coming from the router
 }
@@ -30,17 +31,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
             alert("获取抽奖规则错误:" + e.message)
         })
     }
-    async loadImage(url: string): Promise<HTMLImageElement> {
-        console.log("正在加载资源:" + url)
-        return new Promise((resolve, reject) => {
-            const img = new Image();
-            img.src = url;
-            img.onload = function () {
-                return resolve(img)
-            };
-            img.onerror = () => reject(new Error(`load ${url} fail`));
-        })
-    }
+
     async componentDidMount() {
         this.listenUserAction()
         const screenDom = this.myRef.current as HTMLCanvasElement
@@ -50,42 +41,60 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
         } catch (e) {
             return
         }
-        const asserts = new Map<string, HTMLImageElement>()
+        if (!setting) {
+            return
+        }
+        const asserts = await loadAsserts([{
+            name: "itemBg", source: "/item-bg.png"
+        }, {
+            name: "demo", source: "/demo.png"
+        }])
 
-        const itemBg: HTMLImageElement = await this.loadImage("/item-bg.png")
-        asserts.set("itemBg", itemBg)
-        const demoAvatar: HTMLImageElement = await this.loadImage("/demo.png")
-        asserts.set("demo", demoAvatar)
-        console.log("资源加载完成！")
         this.game = new GameScreen(screenDom, setting.userList, {
-            countOfItemInRunningAtAnyTime: 30,
-            newCountPeerSecond: 15,
-            pickCountList: [10],
+            countOfItemInRunningAtAnyTime: 20,
+            newCountPeerSecond: 10,
+            pickCountList: setting.setting.rule,
             asserts: asserts
         })
         this.game.start()
+
+    }
+    doLottery() {
+        if (!this.game) {
+            return
+        }
+        const store = this.game.stop()
+        const id = this.props.match.params.settingId
+        const luckyList = []
+        const keys = store.keys()
+        for (let key of keys) {
+            const userList = store.get(key).map((user) => { return user.id })
+            luckyList.push({
+                award_id: ~~key,
+                user_id_list: userList
+            })
+        }
+        fetch("/api/setting/lucky-people/" + id, {
+            method: "POST",
+            body: JSON.stringify(luckyList),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then((resp) => { return resp.json() }).then((d) => { console.log(d) }).catch((e) => {
+            console.log(e)
+            alert("抽奖失败！")
+        })
     }
     // 监听键盘事件
     listenUserAction() {
-        var hasStop = false
-        var hasStart = false
         var action = (even: KeyboardEvent) => {
             const keyName = even.key
             switch (keyName) {
-                // 空格键暂停抽奖
+                // 空格键抽奖
                 case " ":
-                    if (this.game) {
-                        hasStop = true
-                        this.game.stop()
-                    }
+                    this.doLottery()
                     break
-                // 回车键滚动屏幕
-                // case "Enter":
-                //     if (!hasStop && this.game && !hasStart) {
-                //         hasStart = true
-                //         this.game.start()
-                //     }
-                //     break
                 // Esc键回到首页
                 case "Escape":
                     document.body.removeEventListener("keyup", action)

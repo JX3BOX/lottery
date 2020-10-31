@@ -14,13 +14,9 @@ type LuckyRule struct {
 	UserIdList []int64 `json:"user_id_list"`
 }
 
-type LuckyPeopleListForm struct {
-	SettingId int64       `json:"setting_id"`
-	LuckyRule []LuckyRule `json:"lucky_rule"`
-}
-
 func PostLuckyPeople(ctx iris.Context) {
-	var form LuckyPeopleListForm
+	id, _ := ctx.Params().GetInt64("id")
+	var form []LuckyRule
 	if err := ctx.ReadJSON(&form); err != nil {
 		log.Println(err)
 		ctx.JSON(map[string]interface{}{
@@ -31,7 +27,7 @@ func PostLuckyPeople(ctx iris.Context) {
 	// 默认情况下 浏览器提交的数据不用校验，因为只有本地运行，不允许篡改
 
 	// 校验基本数据
-	setting, err := v.GetSetting(form.SettingId)
+	setting, err := v.GetSetting(id)
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(map[string]interface{}{
@@ -56,7 +52,7 @@ func PostLuckyPeople(ctx iris.Context) {
 	}
 	code := 0
 	msg := ""
-	for _, luckRule := range form.LuckyRule {
+	for _, luckRule := range form {
 		matchAward := false
 		matchCount := false
 		for _, rule := range setting.Rule {
@@ -90,7 +86,7 @@ func PostLuckyPeople(ctx iris.Context) {
 	count := int64(0)
 
 	// 插入数据
-	for _, luckRule := range form.LuckyRule {
+	for _, luckRule := range form {
 		effect, err := v.InsertLuckyPeople(setting.ID, luckRule.AwardId, luckRule.UserIdList)
 		if err != nil {
 			log.Println(err)

@@ -2,6 +2,9 @@ import React from 'react';
 import { Layout, Menu, Tabs } from 'antd';
 import "./home/index.scss"
 import SettingList from "./home/setting"
+import LuckyPeople from "./home/lucky-people"
+import Config from "./home/config"
+import Readme from "./home/readme"
 const { Header, Content, Footer } = Layout;
 const { TabPane } = Tabs;
 export default class Page extends React.Component<any> {
@@ -11,21 +14,22 @@ export default class Page extends React.Component<any> {
                 <Header>
                     <div className="logo" />
                     <Menu theme="dark" mode="horizontal">
-                        <Menu.Item key="1">nav 1</Menu.Item>
-                        <Menu.Item key="2">nav 2</Menu.Item>
-                        <Menu.Item key="3">nav 3</Menu.Item>
+                        <Menu.Item key="1">JX3BOX PVE抽奖</Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{ padding: '0 50px' }}>
                     <Tabs defaultActiveKey="1" centered>
-                        <TabPane tab="Tab 1" key="1">
+                        <TabPane tab="抽奖设置" key="1">
                             <SettingList />
                         </TabPane>
-                        <TabPane tab="Tab 2" key="2">
-                            Content of Tab Pane 2
+                        <TabPane tab="中奖名单" key="2">
+                            <LuckyPeople />
                         </TabPane>
-                        <TabPane tab="Tab 3" key="3">
-                            Content of Tab Pane 3
+                        <TabPane tab="数据配置" key="3">
+                            <Config />
+                        </TabPane>
+                        <TabPane tab="使用说明" key="4">
+                            <Readme />
                         </TabPane>
                     </Tabs>
                 </Content>

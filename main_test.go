@@ -78,17 +78,15 @@ func TestHttp(t *testing.T) {
 			if len(userList) == 0 {
 				t.Fail()
 			}
-			var form c.LuckyPeopleListForm
-			form.SettingId = s.ID
+			var luckyRuleList []c.LuckyRule
 			totalCount := 0
 			for _, rule := range s.Rule {
 				totalCount = totalCount + rule.Count
-				form.LuckyRule = append(form.LuckyRule, c.LuckyRule{AwardId: rule.AwardId, UserIdList: getLuckPeopleList(rule.Count, userList)})
+				luckyRuleList = append(luckyRuleList, c.LuckyRule{AwardId: rule.AwardId, UserIdList: getLuckPeopleList(rule.Count, userList)})
 			}
 			t.Run("提交中奖名单", func(t *testing.T) {
 				e := httptest.New(t, testApp)
-				log.Println(form)
-				resp := e.POST("/api/lucky-people").WithJSON(form).Expect()
+				resp := e.POST("/api/setting/lucky-people/{id}").WithPath("id", s.ID).WithJSON(luckyRuleList).Expect()
 				resp.Status(200)
 				resp.JSON().Object().Value("code").Number().Equal(0)
 				resp.JSON().Object().Value("data").Object().Value("effect").Number().Equal(float64(totalCount))
@@ -103,8 +101,7 @@ func TestHttp(t *testing.T) {
 			})
 			t.Run("重复-提交中奖名单", func(t *testing.T) {
 				e := httptest.New(t, testApp)
-				log.Println(form)
-				resp := e.POST("/api/lucky-people").WithJSON(form).Expect()
+				resp := e.POST("/api/setting/lucky-people/{id}").WithPath("id", s.ID).WithJSON(luckyRuleList).Expect()
 				resp.Status(200)
 				resp.JSON().Object().Value("code").Number().Equal(405)
 				log.Println(resp.JSON().Object().Value("msg").String().Raw())

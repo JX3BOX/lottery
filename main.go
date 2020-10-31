@@ -31,9 +31,13 @@ func GetApp() *iris.Application {
 	api.Get("/setting/prepare/{id:int64}", c.PrepareSetting)
 	api.Get("/setting", c.GetAllSettings)
 	// 提交中奖名单
-	api.Post("/lucky-people", c.PostLuckyPeople)
+	api.Post("/setting/lucky-people/{id:int64}", c.PostLuckyPeople)
 	// 获取中将名单
 	api.Get("/lucky-people/at/setting/{id:int64}", c.GetLuckPeopleList)
+	// demo数据
+	api.Get("/setting/demo", c.Demo)
+	//
+	api.Get("/setting/config", c.ReadConfig)
 	return app
 }
 

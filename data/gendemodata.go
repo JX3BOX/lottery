@@ -24,7 +24,7 @@ func GenerateDemoData() {
 		for i := 1; i <= 5000; i++ {
 			userPool = append(userPool, schema.User{
 				Name:   pool + "__" + strconv.Itoa(i),
-				Avatar: "/image/demo.png",
+				Avatar: "/demo.png",
 				Pool:   pool,
 			})
 		}
@@ -44,7 +44,7 @@ func GenerateDemoData() {
 		awardQueue = append(awardQueue, schema.Award{
 			ID:    int64(i),
 			Name:  "奖品_" + strconv.Itoa(i),
-			Image: "/image/demo.png",
+			Image: "/demo.png",
 		})
 	}
 	body, err = json.Marshal(awardQueue)

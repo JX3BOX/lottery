@@ -144,3 +144,7 @@ func InitData() {
 	initAwardData()
 	initSettingData()
 }
+
+func ReadConfig() {
+
+}
