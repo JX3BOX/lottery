@@ -98,7 +98,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>> {
                 // Esc键回到首页
                 case "Escape":
                     document.body.removeEventListener("keyup", action)
-                    this.props.history.push("/home")
+                    this.props.history.push("/")
                     break
             }
         }

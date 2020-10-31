@@ -2,3 +2,5 @@ app
 lottery.db
 conf
 .idea
+release
+static
