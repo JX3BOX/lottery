@@ -92,8 +92,8 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 marginX: 10,
                 marginY: 10,
                 runTime: 3,
-                fontSize: 20,
-                usernameHeight: 0
+                fontStyle: `20px Arial`,
+                usernameHeight: 20
             }
         })
         this.game.start()

@@ -22,7 +22,7 @@ interface IEndingAnimation {
     marginX: number //每个用户的x轴间距
     marginY: number // 每个用户的y轴间距
     runTime: number // 结束动画运行几秒钟
-    fontSize: number // 用户名字体大小
+    fontStyle: string // 用户名字体style
     usernameHeight: number //展示用户名高度
 }
 interface IAnimation {
@@ -148,6 +148,19 @@ class EndAnimation {
                 // 画头像
                 const avatar = this.asserts.get("user_" + item.id)
                 ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + item.w / 4, item.y + item.h / 4, item.w / 2, item.h / 2)
+                // 写名字
+                if (item.isStopped()) {
+                    ctx.font = this.animation.fontStyle
+                    // 名字是否超长
+                    const nameLength = ctx.measureText(item.data.name).width
+                    const showAwatartWidth = item.w + this.animation.marginX * 2
+                    if (nameLength > showAwatartWidth) {
+                        ctx.fillText(item.data.name, item.x, item.y + item.h + this.animation.marginY)
+                    } else {
+                        ctx.fillText(item.data.name, item.x + (showAwatartWidth - nameLength) / 2, item.y + item.h + this.animation.marginY)
+                    }
+                }
+
 
                 ctx.save()
                 // 移动原点中心位置
