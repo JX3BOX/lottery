@@ -85,8 +85,8 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
             G_FORCE: (): number => {
                 return 0.001
             },
-            countOfItemInRunningAtAnyTime: 5,
-            newItemItervalTime: () => { return 100 + Math.random() * 200 },
+            countOfItemInRunningAtAnyTime: 20,  //初始运动的个数
+            newItemItervalTime: () => { return 60 + Math.random() * 200 },  // 调整速度
             endingAnimation: {
                 columnItemCount: 5,
                 marginX: 10,
