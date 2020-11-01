@@ -17,12 +17,13 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
 }
 
 // 资源加载器
-export async function loadAsserts(list: Array<IAssert>): Promise<Map<string, HTMLImageElement>> {
+export async function loadAsserts(list: Array<IAssert>, cb?: Function): Promise<Map<string, HTMLImageElement>> {
     const asserts = new Map<string, HTMLImageElement>()
     for (let i = 0; i < list.length; i++) {
         const item = list[i];
         const itemBg: HTMLImageElement = await loadImage(item.source)
         asserts.set(item.name, itemBg)
+        cb && cb()
     }
     console.log("资源加载完成！")
     return asserts
