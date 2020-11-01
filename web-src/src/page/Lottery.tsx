@@ -83,7 +83,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
             itemWidth: 160,
             itemHeight: 160,
             G_FORCE: (): number => {
-                return 0.001
+                return 0.001 //如果要下降速度不一样可以改成随机数
             },
             countOfItemInRunningAtAnyTime: 20,  //初始运动的个数
             newItemItervalTime: () => { return 60 + Math.random() * 200 },  // 调整速度

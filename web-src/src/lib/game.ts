@@ -33,9 +33,9 @@ interface IAnimation {
     // 单个重力加速度
     G_FORCE(): number;
     countOfItemInRunningAtAnyTime: number // 初始运动的个数
-    newItemItervalTime(): number // 每新增个数的间隔时间 毫秒
+    newItemItervalTime(): number // 每新增1个的间隔时间 毫秒
 
-    endingAnimation: IEndingAnimation //结束时每行摆几个用户
+    endingAnimation: IEndingAnimation //结束动画配置
 }
 
 // 结束动画

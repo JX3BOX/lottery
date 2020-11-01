@@ -1,8 +1,12 @@
 ## 抽奖
 
+该抽奖程序 每次可以抽取多个不同奖品。
+
+效果： TODO 补充B站地址
+
 ## 直接使用
 
-下载`release`文件， 然后 参考 ` 配置文件说明` 进行配置
+下载`release`下单文件， 然后 参考 ` 配置文件说明` 进行配置
 
 ### window
 
@@ -10,25 +14,45 @@
 
 ### `linux`或`mac`
 
-终端执行 `./app` 
+终端执行 `./app` 【mac没有编译需要自己编译 运行`build-for-mac.sh`，可执行文件在`release`目录下】
 
+
+然后用 `chrome` 打开　`http://localhost:14422/` 即可。  `window` 和 `linux`下 按`F11`全屏， `mac`好像是 `cmd + shift + f`全屏
+
+### 操作说明
+
+在浏览器查看使用说明即可
 
 ## 二次开发
-### 编译运行
 
 `Linux` 或 `Mac` 执行:
 
 ```shell
-chmod +x build.sh 
-./build.sh
-./app #运行抽奖服务
+go run main.go
+# 新开终端
+cd web-src
+yarn install # npm install
+yarn start # npm start
 ```
 
-`window` 下自己编译。
+`window` 下建议使用`WSL`进行开发
+
+### 动画配置
+
+参数定义在： `web-src/lib/game.ts`的 `IAnimation`和`IEndingAnimation`
+参数配置在： `web-src/Lottery.tsx`的`componentDidMount`的`new GameScreen`
+
+使用IDE搜索即可找到具体代码
 
 ## 配置文件说明
 
-`lottery/conf-demo`下有测试配置文件，复制`conf-demo`到`conf`即可运行demo
+### demo数据
+
+启动浏览器后 在 `数据配置` 点击 `生成测试配置`，然后点击`读取配置生成数据` 即可生成demo数据
+
+### 生产环境
+
+按照下文配置好配置文件后 ，在浏览器后`数据配置` 点击`读取配置生成数据` 即可生成配置好的数据
 
 ### 用户池 配置
 
@@ -101,3 +125,7 @@ chmod +x build.sh
 ## License
 
 MIT
+
+## 打赏
+
+如果对你有帮助，可以请喝咖啡。【备注github帐户】
