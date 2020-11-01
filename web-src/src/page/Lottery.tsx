@@ -113,17 +113,17 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 user_id_list: userList
             })
         }
-        // fetch("/api/setting/lucky-people/" + id, {
-        //     method: "POST",
-        //     body: JSON.stringify(luckyList),
-        //     headers: {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json'
-        //     }
-        // }).then((resp) => { return resp.json() }).then((d) => { console.log(d) }).catch((e) => {
-        //     console.log(e)
-        //     alert("抽奖失败！")
-        // })
+        fetch("/api/setting/lucky-people/" + id, {
+            method: "POST",
+            body: JSON.stringify(luckyList),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        }).then((resp) => { return resp.json() }).then((d) => { console.log(d) }).catch((e) => {
+            console.log(e)
+            alert("抽奖失败！")
+        })
     }
     // 监听键盘事件
     listenUserAction() {
