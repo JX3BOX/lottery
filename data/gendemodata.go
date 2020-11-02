@@ -26,6 +26,7 @@ func GenerateDemoData() {
 				Name:   pool + "__" + strconv.Itoa(i),
 				Avatar: "/demo.png",
 				Pool:   pool,
+				Weight: i / 1000,
 			})
 		}
 	}

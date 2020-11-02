@@ -9,6 +9,7 @@ type User struct {
 	Ext       string `xorm:"'ext'" json:"ext,omitempty"`   // 扩展字段1
 	Status    int    `xorm:"'status'" json:"status"`       // 是否已经中间
 	Pool      string `xorm:"'pool'" json:"pool,omitempty"` // 用户池
+	Weight    int    `xorm:"'weight'" json:"weight"`       // 排序权重
 	CreatedAt int64  `xorm:"created_at" json:"created_at"`
 }
 

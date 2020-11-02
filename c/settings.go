@@ -1,8 +1,11 @@
 package c
 
 import (
+	"encoding/json"
 	"log"
 
+	"github.com/huyinghuan/lottery/database"
+	"github.com/huyinghuan/lottery/database/schema"
 	"github.com/huyinghuan/lottery/database/v"
 	"github.com/kataras/iris/v12"
 )
@@ -25,7 +28,7 @@ func PrepareSetting(ctx iris.Context) {
 		})
 		return
 	}
-	list, err := v.GetUserListByPool(setting.Pool)
+	list, err := v.GetLuckyUserPoolByPool(setting.Pool, 1000)
 	if err != nil {
 		log.Println(err)
 		ctx.JSON(map[string]interface{}{
@@ -56,5 +59,40 @@ func GetAllSettings(ctx iris.Context) {
 	ctx.JSON(map[string]interface{}{
 		"code": 0,
 		"data": s,
+	})
+}
+
+func AddSettings(ctx iris.Context) {
+	var s schema.Setting
+
+	if err := ctx.ReadJSON(&s); err != nil {
+		log.Println(err)
+		ctx.JSON(map[string]interface{}{
+			"code": 500,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	db := database.Get()
+
+	if b, err := json.Marshal(s.Rule); err != nil {
+		log.Fatal(err)
+	} else {
+		s.RuleContent = string(b)
+	}
+	effect, err := db.Insert(&s)
+	if err != nil {
+		log.Println(err)
+		ctx.JSON(map[string]interface{}{
+			"code": 500,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	ctx.JSON(map[string]interface{}{
+		"code": 0,
+		"data": map[string]interface{}{
+			"effect": effect,
+		},
 	})
 }

@@ -28,6 +28,8 @@ func GetApp() *iris.Application {
 		// 禁止其他ip TODO
 		ctx.Next()
 	})
+	api.Get("/award", c.AwardList)
+	api.Post("/award", c.AddAward)
 	api.Get("/setting/prepare/{id:int64}", c.PrepareSetting)
 	api.Get("/setting", c.GetAllSettings)
 	// 提交中奖名单

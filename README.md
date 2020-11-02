@@ -6,7 +6,7 @@
 
 ## 直接使用
 
-下载`release`下单文件， 然后 参考 ` 配置文件说明` 进行配置
+下载本项目的`release`， 然后 参考 ` 配置文件说明` 进行配置
 
 ### window
 
@@ -14,7 +14,7 @@
 
 ### `linux`或`mac`
 
-终端执行 `./app` 【mac没有编译需要自己编译 运行`build-for-mac.sh`，可执行文件在`release`目录下】
+终端执行 `./app`
 
 
 然后用 `chrome` 打开　`http://localhost:14422/` 即可。  `window` 和 `linux`下 按`F11`全屏， `mac`好像是 `cmd + shift + f`全屏
@@ -35,7 +35,29 @@ yarn install # npm install
 yarn start # npm start
 ```
 
-`window` 下建议使用`WSL`进行开发
+`window` 下建议使用`WSL`进行二次开发和部署
+
+### 编译
+
+运行脚本`build.sh`
+
+该脚本不提供 `mac`和`linux`的跨平台编译。
+
+由于本程序使用了 `sqlite3` 如果需要跨系统编译需要`gcc`，那么进行下面软件安装。
+
+【或者 通过修改 `database/init.go`的 `第9行`和`第22行`替换成`mysql`来避免使用`gcc`编译】
+
+#### `mac`和`ubuntu`下编译`window`版本
+
+需要安装:
+
+mac: `brew install mingw-w64` 
+
+ubuntu: `sudo apt-get install gcc-mingw-w64`
+
+#### `mac` 和 `linux`的相互编译
+
+`mac`下编译 `linux`版本，或者 `linux`下编译`mac`版本 都不推荐使用跨平台编译。 推荐在部署机上克隆代码后进行本机build
 
 ### 动画配置
 
@@ -128,4 +150,4 @@ MIT
 
 ## 打赏
 
-如果对你有帮助，可以请喝咖啡。【备注github帐户】
+如果对你有帮助，可以请喝咖啡。【请备注github帐户】

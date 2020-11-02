@@ -69,7 +69,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
         })
         const totalSize = preloadAssets.length
         let loadedSize = 0
-        this.setState({ size: totalSize })
+        // this.setState({ size: totalSize })
         const asserts = await loadAsserts(preloadAssets, () => {
             loadedSize++
             let precent = Math.floor((loadedSize / totalSize) * 100)
@@ -137,7 +137,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 // Esc键回到首页
                 case "Escape":
                     document.body.removeEventListener("keyup", action)
-                    this.props.history.push("/")
+                    this.props.history.goBack()
                     break
             }
         }
@@ -154,7 +154,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                     <div className="screen-title"></div>
                 </div>
                 <Modal
-                    title={`正在加载${this.state.size}个图片资源`}
+                    title={`正在加载图片资源`}
                     visible={this.state.visible}
                     centered={true}
                     closable={false}

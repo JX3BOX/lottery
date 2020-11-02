@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Table, Space, Tag, Button } from "antd"
+import { Table, Space, Tag, Button, Form, Input } from "antd"
 import { withRouter, RouteComponentProps } from "react-router-dom"
 
 interface IState {
@@ -85,11 +85,27 @@ class Component extends React.Component<RouteComponentProps, IState> {
     goto(url) {
         this.props.history.push(url)
     }
-    genDemoData() {
+    onFinish(v) {
 
     }
     render() {
-        return <Table dataSource={this.state.settingList} columns={this.columns} rowKey="id" />
+        return (<>
+            <Form name="award" layout="inline" onFinish={(values) => { this.onFinish(values) }} >
+                <Form.Item name="pool">
+
+                </Form.Item>
+                <Form.Item name="award_id">
+
+                </Form.Item>
+                <Form.Item name="count">
+                    <Input placeholder="数量" type="number" />
+                </Form.Item>
+                <Form.Item shouldUpdate={true}>
+                    <Button type="primary" htmlType="submit">新增</Button>
+                </Form.Item>
+            </Form>
+            <Table dataSource={this.state.settingList} columns={this.columns} rowKey="id" />
+        </>)
     }
 }
 

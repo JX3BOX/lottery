@@ -1,40 +1,45 @@
 import React from 'react';
-import { Layout, Menu, Tabs } from 'antd';
+import { Link, withRouter, Switch, Route } from "react-router-dom"
+import { Layout, Menu } from 'antd';
 import "./home/index.scss"
 import SettingList from "./home/setting"
 import LuckyPeople from "./home/lucky-people"
 import Config from "./home/config"
 import Readme from "./home/readme"
+import Award from "./home/award"
 const { Header, Content, Footer } = Layout;
-const { TabPane } = Tabs;
-export default class Page extends React.Component<any> {
+
+class Page extends React.Component<any> {
     render() {
+        let path = this.props.match.path
         return (
             <Layout className="layout">
                 <Header>
                     <div className="logo" />
                     <Menu theme="dark" mode="horizontal">
-                        <Menu.Item key="1">JX3BOX PVE抽奖</Menu.Item>
+                        <Menu.Item key="1"><Link to="https://www.jx3box.com">JX3BOX</Link> </Menu.Item>
+                        <Menu.Item key="12"><Link to={`${path}/`}>抽奖ing</Link></Menu.Item>
+                        <Menu.Item key="2"><Link to={`${path}/lucky`}>中奖名单</Link></Menu.Item>
+                        <Menu.Item key="3"><Link to={`${path}/award`}>奖品配置</Link> </Menu.Item>
+                        <Menu.Item key="4">抽奖配置</Menu.Item>
+                        <Menu.Item key="5">用户池配置</Menu.Item>
+                        <Menu.Item key="6"><Link to={`${path}/config`}>高级配置</Link></Menu.Item>
+                        <Menu.Item key="7"><Link to={`${path}/readme`}>操作说明</Link> </Menu.Item>
                     </Menu>
                 </Header>
                 <Content style={{ padding: '0 50px' }}>
-                    <Tabs defaultActiveKey="1" centered>
-                        <TabPane tab="抽奖设置" key="1">
-                            <SettingList />
-                        </TabPane>
-                        <TabPane tab="中奖名单" key="2">
-                            <LuckyPeople />
-                        </TabPane>
-                        <TabPane tab="数据配置" key="3">
-                            <Config />
-                        </TabPane>
-                        <TabPane tab="使用说明" key="4">
-                            <Readme />
-                        </TabPane>
-                    </Tabs>
+                    <Switch>
+                        <Route exact path={`${path}/`} component={SettingList} />
+                        <Route exact path={`${path}/lucky`} component={LuckyPeople} />
+                        <Route exact path={`${path}/award`} component={Award} />
+                        <Route path={`${path}/config`} component={Config} />
+                        <Route exact path={`${path}/readme`} component={Readme} />
+                    </Switch>
                 </Content>
                 <Footer style={{ textAlign: 'center' }}>©2020 JX3BOX.com</Footer>
             </Layout>
         )
     }
 }
+
+export default withRouter(Page)
