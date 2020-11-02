@@ -19,6 +19,10 @@ func AwardList(ctx iris.Context) {
 		})
 		return
 	}
+	ctx.JSON(map[string]interface{}{
+		"code": 0,
+		"data": list,
+	})
 }
 
 func AddAward(ctx iris.Context) {

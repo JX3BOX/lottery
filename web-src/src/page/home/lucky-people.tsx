@@ -44,15 +44,14 @@ export default class Component extends React.Component<IProps, IState> {
         const settingIdList = this.state.settingList.map((item: any) => { return item.id })
         return (
             <Row style={{ height: "900px", overflow: "auto" }}>
-                <Col span={24}>
-                    {settingIdList.map((id: any, index: number) => {
-                        return (
+                {settingIdList.map((id: any, index: number) => {
+                    return (
+                        <Col span={24}>
                             <Card title={"抽奖顺序:" + (index + 1)} key={id}>
                                 <LuckyRecords id={id} />
                             </Card>
-                        )
-                    })}
-                </Col>
+                        </Col>)
+                })}
             </Row>
         )
     }

@@ -30,8 +30,10 @@ func GetApp() *iris.Application {
 	})
 	api.Get("/award", c.AwardList)
 	api.Post("/award", c.AddAward)
+	api.Get("/user-pool-list", c.UserPoolList)
 	api.Get("/setting/prepare/{id:int64}", c.PrepareSetting)
 	api.Get("/setting", c.GetAllSettings)
+	api.Post("/setting", c.AddSettings)
 	// 提交中奖名单
 	api.Post("/setting/lucky-people/{id:int64}", c.PostLuckyPeople)
 	// 获取中将名单
