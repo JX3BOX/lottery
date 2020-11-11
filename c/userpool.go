@@ -24,3 +24,18 @@ func UserPoolList(ctx iris.Context) {
 		"data": list,
 	})
 }
+
+type PostForm struct {
+	Pool string `json:"pool"`
+	URL  string `json:"url"`
+}
+
+func FetchUserPoolFromURL(ctx iris.Context) {
+	var form PostForm
+	if err := ctx.ReadJSON(&form); err != nil {
+
+	}
+
+	// http.NewRequest("GET", form.URL, body io.Reader)
+
+}

@@ -133,6 +133,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 // 空格键抽奖
                 case " ":
                     this.doLottery()
+                    document.body.removeEventListener("keyup", action)
                     break
                 // Esc键回到首页
                 case "Escape":
