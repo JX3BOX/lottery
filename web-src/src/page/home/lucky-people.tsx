@@ -46,7 +46,7 @@ export default class Component extends React.Component<IProps, IState> {
             <Row style={{ height: "900px", overflow: "auto" }}>
                 {settingIdList.map((id: any, index: number) => {
                     return (
-                        <Col span={24}>
+                        <Col span={24} key={id}>
                             <Card title={"抽奖顺序:" + (index + 1)} key={id}>
                                 <LuckyRecords id={id} />
                             </Card>

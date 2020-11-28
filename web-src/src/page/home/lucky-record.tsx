@@ -20,7 +20,6 @@ export default class Component extends React.Component<IProps, IState> {
     getLucky(id) {
         fetch('/api/lucky-people/at/setting/' + id).then((response) => { return response.json() }).then((data) => {
             if (data.code === 0) {
-                console.log(data.data)
                 this.setState({ ruleList: data.data })
             } else {
                 notification.error({ placement: "bottomRight", description: JSON.stringify(data), message: "错误" })

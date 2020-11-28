@@ -30,9 +30,10 @@ func GetApp() *iris.Application {
 	})
 	api.Get("/award", c.AwardList)
 	api.Post("/award", c.AddAward)
-	// 增加用户池
-	api.Post("/user-pool/from-url", c.FetchUserPoolFromURL)
+	// 增加用户池 TODO
+	// api.Post("/user-pool/from-url", c.FetchUserPoolFromURL)
 
+	// 获取用户池分组
 	api.Get("/user-pool-list", c.UserPoolList)
 	api.Get("/setting/prepare/{id:int64}", c.PrepareSetting)
 	api.Get("/setting", c.GetAllSettings)
