@@ -12,7 +12,19 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
         img.onload = function () {
             return resolve(img)
         };
-        img.onerror = () => reject(new Error(`load ${url} fail`));
+        img.onerror = function (e) {
+            img.src = "http://localhost:14422/demo.png";
+            img.onload = function () {
+                return resolve(img)
+            };
+            img.onerror = function (e) {
+                console.log(e)
+                reject(new Error(`load ${url} fail`))
+            }
+
+            // console.log(e)
+            // reject(new Error(`load ${url} fail`))
+        }
     })
 }
 
@@ -21,8 +33,18 @@ export async function loadAsserts(list: Array<IAssert>, cb?: Function): Promise<
     const asserts = new Map<string, HTMLImageElement>()
     for (let i = 0; i < list.length; i++) {
         const item = list[i];
-        const itemBg: HTMLImageElement = await loadImage(item.source)
-        asserts.set(item.name, itemBg)
+        console.log(item.source)
+        if (item.source === "") {
+            item.source = "http://localhost:14422/demo.png"
+        }
+
+        try {
+            const itemBg: HTMLImageElement = await loadImage(item.source)
+            asserts.set(item.name, itemBg)
+        } catch (e) {
+
+        }
+
         cb && cb()
     }
     console.log("资源加载完成！")

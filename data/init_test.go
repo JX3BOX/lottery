@@ -8,7 +8,7 @@ import (
 )
 
 func TestInsertUser(t *testing.T) {
-	initUserData()
+	initPoolUserData()
 }
 func TestInsertAward(t *testing.T) {
 	initAwardData()

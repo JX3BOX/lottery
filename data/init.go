@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
 	"github.com/huyinghuan/lottery/database/schema"
 
@@ -19,48 +20,53 @@ func getFilePath(u string) string {
 	return u
 }
 
-func initUserData() {
+func initPoolUserData() {
 	db := database.Get()
-
 	db.Where("id > 0").Delete(new(schema.User))
+	fileList, err := ioutil.ReadDir(getFilePath("conf/user"))
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 
-	userBody, err := ioutil.ReadFile(getFilePath("conf/user.json"))
+	for _, file := range fileList {
+		if file.IsDir() {
+			continue
+		}
+		filename := file.Name()
+		fileArr := strings.Split(filename, ".")
+
+		if fileArr[len(fileArr)-1] != "json" {
+			continue
+		}
+		pollName := fileArr[0]
+		initUserData(filename, pollName)
+	}
+}
+
+func initUserData(filename string, pollName string) {
+	db := database.Get()
+	userBody, err := ioutil.ReadFile(getFilePath("conf/user/" + filename))
 	if err != nil {
 		log.Fatal(err)
 	}
 	var userList []schema.User
 	json.Unmarshal(userBody, &userList)
-	userCount := len(userList)
-	if userCount > 0 {
-		i := 0
-		for {
-			start := i * 50
-			end := (i + 1) * 50
 
-			if end > userCount {
-				if start == userCount {
-					break
-				}
-				if _, err := db.Insert(userList[start:userCount]); err != nil {
-					log.Fatal(err)
-				}
-				break
-			} else {
-				if _, err := db.Insert(userList[start:end]); err != nil {
-					log.Fatal(err)
-				}
-			}
-			i++
+	for _, user := range userList {
+		user.Pool = pollName
+		if _, err := db.Insert(user); err != nil {
+			log.Println(err)
 		}
 	}
 	insertSuccessCount, err := db.Count(new(schema.User))
 	if err != nil {
 		log.Fatal(err)
 	}
-	if insertSuccessCount != int64(userCount) {
-		log.Fatalf("插入用户数量 %d != %d 实际配置数据", insertSuccessCount, userCount)
+	if insertSuccessCount != int64(len(userList)) {
+		log.Printf("%s 插入用户数量 %d != %d 实际配置数据", pollName, insertSuccessCount, len(userList))
 	} else {
-		log.Printf("成功插入用户数据 %d 条\n", insertSuccessCount)
+		log.Printf("%s 成功插入用户数据 %d 条\n", pollName, insertSuccessCount)
 	}
 }
 func initAwardData() {
@@ -140,7 +146,7 @@ func InitData() {
 	//if err := os.Remove(getFilePath("lottery.db")); err != nil {
 	//	log.Println(err)
 	//}
-	initUserData()
+	initPoolUserData()
 	initAwardData()
 	initSettingData()
 }
