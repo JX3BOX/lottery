@@ -13,7 +13,7 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
             return resolve(img)
         };
         img.onerror = function (e) {
-            img.src = "http://localhost:14422/demo.png";
+            img.src = "/demo.jpg";
             img.onload = function () {
                 return resolve(img)
             };
@@ -35,7 +35,7 @@ export async function loadAsserts(list: Array<IAssert>, cb?: Function): Promise<
         const item = list[i];
         console.log(item.source)
         if (item.source === "") {
-            item.source = "http://localhost:14422/demo.png"
+            item.source = "/demo.jpg"
         }
 
         try {
