@@ -4,3 +4,4 @@ conf
 .idea
 release
 static
+__debug_*

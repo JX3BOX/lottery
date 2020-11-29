@@ -50,9 +50,11 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
         try {
             setting = await this.prepareSetting()
         } catch (e) {
+            console.log(e)
             return
         }
-        if (!setting) {
+        if (!setting || !setting.userList) {
+            console.log(setting)
             return
         }
 

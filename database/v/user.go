@@ -58,6 +58,7 @@ func GetLuckyUserPoolByPool(pool string, limitPoolSize int) (list []schema.User,
 	}
 	// 用户量不会溢出32位int
 	if int(total) < limitPoolSize {
+		err = db.Where("pool = ? and status = 0", pool).Find(&list)
 		return
 	}
 	// 幸运权重优先选取，比如投票积极的，注册时间长的老用户等优先选取
