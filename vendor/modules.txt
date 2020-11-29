@@ -30,6 +30,9 @@ github.com/golang/snappy
 # github.com/google/go-querystring v1.0.0
 ## explicit
 github.com/google/go-querystring/query
+# github.com/google/uuid v1.1.2
+## explicit
+github.com/google/uuid
 # github.com/gorilla/websocket v1.4.1
 github.com/gorilla/websocket
 # github.com/imkira/go-interpol v1.1.0

@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
+	github.com/google/uuid v1.1.2
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/kataras/iris/v12 v12.1.8
 	github.com/mattn/go-sqlite3 v1.14.4
