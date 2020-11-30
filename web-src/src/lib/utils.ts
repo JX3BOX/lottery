@@ -9,6 +9,10 @@ async function loadImage(url: string): Promise<HTMLImageElement> {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.src = url;
+        if (url.indexOf("/") === -1) {
+            img.src = "http://localhost:14422/avatar/" + url;
+        }
+
         img.onload = function () {
             return resolve(img)
         };

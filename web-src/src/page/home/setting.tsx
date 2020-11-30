@@ -48,8 +48,8 @@ class Component extends React.Component<RouteComponentProps, IState> {
         fetch("/api/award").then((response) => { return response.json() }).then((data) => {
             console.log(data)
             if (data.code === 0) {
-                this.setState({ awardList: data.data })
-                data.data.forEach((award) => {
+                this.setState({ awardList: data.data || [] })
+                data.data?.forEach((award) => {
                     this.awardMap[award.id] = award
                 })
             }
@@ -58,7 +58,7 @@ class Component extends React.Component<RouteComponentProps, IState> {
         fetch("/api/user-pool-list").then((response) => { return response.json() }).then((data) => {
             console.log(data)
             if (data.code === 0) {
-                this.setState({ userPoolList: data.data })
+                this.setState({ userPoolList: data.data || [] })
                 console.log(data.data)
             }
         }).catch((e) => { alert(e) })
@@ -142,7 +142,7 @@ class Component extends React.Component<RouteComponentProps, IState> {
                 <Form name="award" layout="inline" onFinish={(values) => { this.onFinish(values) }} >
                     <Form.Item name="pool" label="用户池">
                         <Select placeholder="选择用户池" style={{ width: 150 }}>
-                            {this.state.userPoolList.map((pool) => {
+                            {this.state.userPoolList?.map((pool) => {
                                 let poolName = pool
                                 if (pool === "") {
                                     poolName = "默认"
@@ -154,7 +154,7 @@ class Component extends React.Component<RouteComponentProps, IState> {
                     </Form.Item>
                     <Form.Item name="award" label="奖品">
                         <Select placeholder="选择奖品" style={{ width: 150 }}>
-                            {this.state.awardList.map((award) => {
+                            {this.state.awardList?.map((award) => {
                                 return <Option value={award.id} key={award.id}>{award.name}</Option>
                             })}
 

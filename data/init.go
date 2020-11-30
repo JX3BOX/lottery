@@ -21,6 +21,7 @@ func getFilePath(u string) string {
 }
 
 func initPoolUserData() {
+	os.MkdirAll(getFilePath("static/avatar"), 0777)
 	db := database.Get()
 	db.Where("id > 0").Delete(new(schema.User))
 	fileList, err := ioutil.ReadDir(getFilePath("conf/user"))
@@ -55,11 +56,12 @@ func initUserData(filename string, pollName string) {
 
 	for _, user := range userList {
 		user.Pool = pollName
+		download(&user, getFilePath("static/avatar"))
 		if _, err := db.Insert(user); err != nil {
 			log.Println(err)
 		}
 	}
-	insertSuccessCount, err := db.Count(new(schema.User))
+	insertSuccessCount, err := db.Where("pool = ?", pollName).Count(new(schema.User))
 	if err != nil {
 		log.Fatal(err)
 	}

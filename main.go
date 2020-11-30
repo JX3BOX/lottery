@@ -46,8 +46,6 @@ func GetApp() *iris.Application {
 	api.Get("/setting/demo", c.Demo)
 	// 读取配置文件初始化数据到数据库
 	api.Get("/setting/config", c.ReadConfig)
-	// 抓取远程图片到本地
-	api.Get("/setting/config/load-remote-image", c.LoadAsserts)
 	return app
 }
 
