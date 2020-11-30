@@ -103,3 +103,22 @@ func GetLuckyUserPoolByPool(pool string, limitPoolSize int) (list []schema.User,
 	err = db.In("id", targetIdPool).Find(&list)
 	return
 }
+
+func GetOne(id int64) schema.User {
+	db := database.Get()
+	var info schema.User
+	if id == 0 {
+		db.Asc("id").Limit(1).Get(&info)
+	} else {
+		db.Where("id = ?", id).Get(&info)
+	}
+	return info
+}
+
+func Update(id int64, avatar, localAvatar string) {
+	db := database.Get()
+	db.Where("id = ?", id).Cols("avatar", "local_avatar").Update(schema.User{
+		Avatar:      avatar,
+		LocalAvatar: localAvatar,
+	})
+}
