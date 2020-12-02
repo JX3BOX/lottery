@@ -27,7 +27,7 @@ func InitDriver() {
 	if err := engine.Ping(); err != nil {
 		log.Fatal("数据库链接失败", err)
 	}
-	if err := engine.Sync2(new(schema.User), new(schema.Setting), new(schema.Award), new(schema.LuckyPeople), new(schema.PayParams)); err != nil {
+	if err := engine.Sync2(new(schema.User), new(schema.Setting), new(schema.Award), new(schema.LuckyPeople)); err != nil {
 		log.Fatal(err)
 	} else {
 		log.Println("同步数据库结构成功")

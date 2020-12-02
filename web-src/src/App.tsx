@@ -7,7 +7,7 @@ export default class App extends React.Component {
     return (
       <Router>
         <Route path="/home" component={Home}></Route>
-        <Route path="/lottery/:settingId" component={Lottery} exact></Route>
+        <Route path="/lottery" component={Lottery} exact></Route>
         <Route exact path="/">
           <Redirect to="/home" />
         </Route>

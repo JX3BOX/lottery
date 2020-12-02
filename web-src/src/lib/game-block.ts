@@ -55,7 +55,7 @@ export class GameBlock {
         if (!this.targetH) {
             this.targetH = this.h * 1.5
         }
-        console.log(this.x, this.y, this.vx, this.vy, this.g)
+        // console.log(this.x, this.y, this.vx, this.vy, this.g)
     }
     // 旋转
     public rotate() {

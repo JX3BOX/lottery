@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { Table, Space, Tag, Button, Form, InputNumber, Row, Col, Divider, Typography, Select } from "antd"
+import { Table, Space, Tag, Button, Form, InputNumber, Row, Col, Divider, Typography, Select, notification } from "antd"
 import { withRouter, RouteComponentProps } from "react-router-dom"
+import * as neffos from "neffos.js"
 const { Title } = Typography;
 
 const { Option } = Select;
@@ -14,6 +15,7 @@ interface SettingItem {
 
 }
 class Component extends React.Component<RouteComponentProps, IState> {
+    private nsConn: neffos.NSConn = null
     constructor(props) {
         super(props)
         this.state = {
@@ -23,9 +25,23 @@ class Component extends React.Component<RouteComponentProps, IState> {
         }
     }
     private awardMap: any = {}
-    componentDidMount() {
+    async componentDidMount() {
         this.loadOptions()
         this.loadData()
+        const conn = await neffos.dial(`ws://localhost:14422/sync-action`, {
+            default: { // "default" namespace.
+                finish: (nsConn, msg) => { // "chat" event.
+                    console.log("完成抽奖:", msg.Body);
+                    this.nowRunninId = ""
+                    this.loadData()
+                }
+            }
+        });
+        // You can either wait to conenct or just conn.connect("connect")
+        // and put the `handleNamespaceConnectedConn` inside `_OnNamespaceConnected` callback instead.
+        // const nsConn = await conn.connect("default");
+        // nsConn.emit(...); handleNamespaceConnectedConn(nsConn);
+        this.nsConn = await conn.connect("default");
     }
     resetSetting(id) {
         const verityCode = prompt(`是否确定重置本次抽奖结果? 输入 ${id} 后确定`)
@@ -100,8 +116,10 @@ class Component extends React.Component<RouteComponentProps, IState> {
             render: (text, record) => {
                 return record.status === 0 ? (
                     <Space size="middle" >
-                        <Button type="link" onClick={() => { this.goto(`/lottery/${record.id}`) }}>去抽奖</Button>
-                    </Space>) :
+
+                        <Button type="link" onClick={() => { this.startLotter(record) }}>启动该轮</Button>
+                    </Space>
+                ) :
                     (<Space size="middle" >
                         <Button type="link" style={{ color: 'green' }}>完成</Button>
                     </Space>
@@ -111,6 +129,19 @@ class Component extends React.Component<RouteComponentProps, IState> {
     ]
     goto(url) {
         this.props.history.push(url)
+    }
+    private nowRunninId = ""
+    startLotter(record: any) {
+        if (this.nowRunninId !== "") {
+            notification.info({
+                message: `有抽奖正在进行中，请等待结束后再尝试`,
+                placement: "bottomRight"
+            });
+            return
+        }
+        this.nowRunninId = record.id
+        record.hasStart = true
+        this.nsConn.emit("next", record.id + "")
     }
     onFinish(v) {
         console.log(v)
@@ -163,8 +194,11 @@ class Component extends React.Component<RouteComponentProps, IState> {
                     <Form.Item name="count" label="抽取人数">
                         <InputNumber placeholder="数量" type="number" style={{ width: 150 }} />
                     </Form.Item>
-                    <Form.Item shouldUpdate={true}>
+                    <Form.Item>
                         <Button type="primary" htmlType="submit">新增</Button>
+                        <Button type="link" onClick={() => {
+                            window.open("/#/lottery", "_blank")
+                        }}>去抽奖</Button>
                     </Form.Item>
                 </Form>
                 <Divider />

@@ -15,6 +15,10 @@ func ReadConfig(ctx iris.Context) {
 	data.InitData()
 }
 
+func ResetDB(ctx iris.Context) {
+	data.Reset()
+}
+
 func T(ctx iris.Context) {
 	ioutil.ReadAll(ctx.Request().Body)
 }

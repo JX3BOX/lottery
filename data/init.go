@@ -153,6 +153,8 @@ func InitData() {
 	initSettingData()
 }
 
-func ReadConfig() {
-
+func Reset() {
+	db := database.Get()
+	db.Where("id > 0").Delete(new(schema.LuckyPeople))
+	db.Where("id > 0").Cols("status").Update(schema.Setting{Status: 0})
 }

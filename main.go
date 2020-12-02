@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,9 +12,12 @@ import (
 
 	"github.com/huyinghuan/lottery/c"
 
+	gorillaWs "github.com/gorilla/websocket"
 	"github.com/huyinghuan/lottery/data"
 	"github.com/huyinghuan/lottery/database"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/websocket"
+	"github.com/kataras/neffos/gorilla"
 )
 
 var Version = "Dev"
@@ -22,8 +26,42 @@ var BuildTime = time.Now().Format("2006-01-02 15:04:05")
 func GetApp() *iris.Application {
 	log.Println("启动服务")
 	app := iris.New()
-	app.HandleDir("/", "static")
 
+	var serverEvents = websocket.Namespaces{
+		"default": websocket.Events{
+			websocket.OnNamespaceConnected: func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				// with `websocket.GetContext` you can retrieve the Iris' `Context`.
+				log.Println("websock 建立连接")
+				return nil
+			},
+			"next": func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				// room.String() returns -> NSConn.String() returns -> Conn.String() returns -> Conn.ID()
+				log.Printf("[%s] sent: %s", nsConn, string(msg.Body))
+
+				// Write message back to the client message owner with:
+				// nsConn.Emit("next", []byte("11111"))
+				// Write message to all except this client with:
+				nsConn.Conn.Server().Broadcast(nsConn, msg)
+				return nil
+			},
+			"finish": func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				// room.String() returns -> NSConn.String() returns -> Conn.String() returns -> Conn.ID()
+				log.Printf("[%s] sent: %s", nsConn, string(msg.Body))
+
+				// Write message back to the client message owner with:
+				// nsConn.Emit("next", []byte("11111"))
+				// Write message to all except this client with:
+				nsConn.Conn.Server().Broadcast(nsConn, msg)
+				return nil
+			},
+		},
+	}
+	websocketServer := websocket.New(
+		gorilla.Upgrader(gorillaWs.Upgrader{CheckOrigin: func(*http.Request) bool { return true }}), /* DefaultGobwasUpgrader can be used too. */
+		serverEvents)
+
+	app.HandleDir("/", "static")
+	app.Get("/sync-action", websocket.Handler(websocketServer))
 	api := app.Party("/api", func(ctx iris.Context) {
 		// 禁止其他ip TODO
 		ctx.Next()
@@ -46,6 +84,7 @@ func GetApp() *iris.Application {
 	api.Get("/setting/demo", c.Demo)
 	// 读取配置文件初始化数据到数据库
 	api.Get("/setting/config", c.ReadConfig)
+	api.Get("/setting/config/reset", c.ResetDB)
 	return app
 }
 

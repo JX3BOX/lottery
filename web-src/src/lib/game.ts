@@ -50,8 +50,9 @@ class EndAnimation {
         this.fixedBlockGroup = fixedBlockGroup
         this.animation = animation
         this.calculateFixedBlockRunParms()
-        this.run()
     }
+    private stop: boolean = false
+
     // 计算目标位置，设置目标地址和vx,vy
     private calculateFixedBlockRunParms() {
         // 按50FPS算
@@ -146,8 +147,26 @@ class EndAnimation {
                 // ** width 可选。要使用的图像的宽度。（伸展或缩小图像）
                 // ** height 可选。要使用的图像的高度。（伸展或缩小图像）
                 // 画头像
-                const avatar = this.asserts.get("user_" + item.id)
-                ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + item.w / 4, item.y + item.h / 4, item.w / 2, item.h / 2)
+                var avatar = this.asserts.get("user_" + item.id)
+                if (!avatar) {
+                    console.log("图片信息不存在:", item.id)
+                    avatar = this.asserts.get("default_avatar")
+                    this.asserts.set("user_" + item.id, avatar)
+                }
+                const targetItemWidth = item.w / 2
+                const targetItemHeight = item.h / 2
+
+                // 移动原点中心位置
+                const center = item.getCurrentPostionCenter()
+
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, targetItemWidth / 2, 0, Math.PI * 2, false);
+                ctx.clip(); //剪切路径
+                ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + targetItemWidth / 2, item.y + targetItemHeight / 2, targetItemWidth, targetItemHeight)
+                ctx.restore();
+
                 // 写名字
                 if (item.isStopped()) {
                     ctx.font = this.animation.fontStyle
@@ -163,31 +182,39 @@ class EndAnimation {
 
 
                 ctx.save()
-                // 移动原点中心位置
-                const center = item.getCurrentPostionCenter()
+
                 ctx.translate(center.x, center.y)
                 // 旋转
                 ctx.rotate(item.degrees)
                 // 画背景
                 const itemBg = this.asserts.get("itemBg")
-                ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * item.w / 2, -1 * item.w / 2, item.w, item.h)
+                ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * targetItemWidth, -1 * targetItemHeight, item.w, item.h)
                 ctx.restore()
 
             })
         })
     }
     // 将选择的对象，排列规则
-    private run() {
+    public run() {
         const ctx = this.canvas.getContext("2d")
         ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
         this.draw()
         requestAnimationFrame(() => {
+            if (this.stop) {
+                ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+                return
+            }
             this.run()
         })
+    }
+    public end() {
+        this.stop = true
     }
 }
 
 export class GameScreen {
+    // 存储排列顺序
+    private fixedBlockGroup: Array<Array<GameBlock>> = []
     private stopped: boolean = false;
     private countOfItemInRunningAtAnyTime: number // 初始运动的个数
     private canvas: HTMLCanvasElement
@@ -195,15 +222,19 @@ export class GameScreen {
     private preparePool: Array<GameBlock> = []
     // 抽奖的个数
     private pickCountList: Array<ILotteryItem> = []
-    private asserts: Map<string, HTMLImageElement> = new Map<string, HTMLImageElement>()
-    private readonly animationConfig: IAnimation
-    constructor(canvas: HTMLCanvasElement, userList: Array<IUser>, setting: IGameSettings, animation: IAnimation) {
+    private asserts: Map<string, HTMLImageElement> = null
+    private animationConfig: IAnimation
+    // constructor(canvas: HTMLCanvasElement, userList: Array<IUser>, setting: IGameSettings, animation: IAnimation) {
+    //     this.canvas = canvas
+    //     this.pickCountList = setting.pickCountList
+    //     this.asserts = setting.asserts
+    //     this.countOfItemInRunningAtAnyTime = animation.countOfItemInRunningAtAnyTime
+    //     this.animationConfig = animation
+    //     this.initUserPool(userList, animation)
+    // }
+    constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas
-        this.pickCountList = setting.pickCountList
-        this.asserts = setting.asserts
-        this.countOfItemInRunningAtAnyTime = animation.countOfItemInRunningAtAnyTime
-        this.animationConfig = animation
-        this.initUserPool(userList, animation)
+
     }
     // 打乱数组 洗牌
     private shuffle(list: Array<any>) {
@@ -256,13 +287,33 @@ export class GameScreen {
         }
     }
     private addNewItemAtTime: number = 0
-    start() {
+    start(userList: Array<IUser>, setting: IGameSettings, animation: IAnimation) {
+        if (this.endingAnimationInstance) {
+            this.endingAnimationInstance.end()
+        }
+
+
+        this.pickCountList = setting.pickCountList
+        this.asserts = setting.asserts
+        this.countOfItemInRunningAtAnyTime = animation.countOfItemInRunningAtAnyTime
+        this.animationConfig = animation
+        this.initUserPool(userList, animation)
+
+
         this.pickInitRunItems()
         this.addNewItemAtTime = Date.now()
         this.animation(Date.now())
     }
-    // 存储排列顺序
-    private fixedBlockGroup: Array<Array<GameBlock>> = []
+    end() {
+        if (this.endingAnimationInstance) {
+            this.endingAnimationInstance.end()
+        }
+        this.fixedBlockGroup = []
+        this.runningStore = new Map<number, GameBlock>()//  存储当前运动的元素
+        this.preparePool = []
+        this.stopped = false
+    }
+
     stop(): Map<string, Array<IUser>> {
         this.stopped = true
         // 当前屏幕上的所有元素
@@ -306,18 +357,36 @@ export class GameScreen {
             group.forEach((item) => {
                 item.rotate()
                 // 画头像
-                const avatar = this.asserts.get("user_" + item.id)
-                ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + item.w / 4, item.y + item.h / 4, item.w / 2, item.h / 2)
+                var avatar = this.asserts.get("user_" + item.id)
+                if (!avatar) {
+                    console.log("图片信息不存在:", item.id)
+                    avatar = this.asserts.get("default_avatar")
+                    this.asserts.set("user_" + item.id, avatar)
+                }
+                const targetItemWidth = item.w / 2
+                const targetItemHeight = item.h / 2
+
+                // 移动原点中心位置
+                const center = item.getCurrentPostionCenter()
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(center.x, center.y, targetItemWidth / 2, 0, Math.PI * 2, false);
+                ctx.clip(); //剪切路径
+                ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + targetItemWidth / 2, item.y + targetItemHeight / 2, targetItemWidth, targetItemHeight)
+                ctx.restore();
+
+                // ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + item.w / 4, item.y + item.h / 4, item.w / 2, item.h / 2)
 
                 ctx.save()
                 // 移动原点中心位置
-                const center = item.getCurrentPostionCenter()
+                //const center = item.getCurrentPostionCenter()
                 ctx.translate(center.x, center.y)
                 // 旋转
                 ctx.rotate(item.degrees)
 
                 const itemBg = this.asserts.get("itemBg")
-                ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * item.w / 2, -1 * item.h / 2, item.w, item.h)
+                ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * targetItemWidth, -1 * targetItemHeight, item.w, item.h)
                 ctx.restore()
             })
         })
@@ -348,18 +417,38 @@ export class GameScreen {
                 continue
             }
             // 画头像
-            const avatar = this.asserts.get("user_" + item.id)
-            ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + item.w / 4, item.y + item.h / 4, item.w / 2, item.h / 2)
+            var avatar = this.asserts.get("user_" + item.id)
+            if (!avatar) {
+                console.log("图片信息不存在:", item.id)
+                avatar = this.asserts.get("default_avatar")
+                this.asserts.set("user_" + item.id, avatar)
+            }
+
+            const targetItemWidth = item.w / 2
+            const targetItemHeight = item.h / 2
+
+            // 移动原点中心位置
+            const center = item.getCurrentPostionCenter()
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(center.x, center.y, targetItemWidth / 2, 0, Math.PI * 2, false);
+            ctx.clip(); //剪切路径
+            ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + targetItemWidth / 2, item.y + targetItemHeight / 2, targetItemWidth, targetItemHeight)
+            ctx.restore();
+
+
+            //ctx.drawImage(avatar, 0, 0, avatar.width, avatar.height, item.x + item.w / 4, item.y + item.h / 4, item.w / 2, item.h / 2)
 
             ctx.save()
             // 移动原点中心位置
-            const center = item.getCurrentPostionCenter()
+            // const center = item.getCurrentPostionCenter()
             ctx.translate(center.x, center.y)
             // 旋转
             ctx.rotate(item.degrees)
 
             const itemBg = this.asserts.get("itemBg")
-            ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * item.w / 2, -1 * item.h / 2, item.w, item.h)
+            ctx.drawImage(itemBg, 0, 0, itemBg.width, itemBg.height, -1 * targetItemWidth, -1 * targetItemHeight, item.w, item.h)
             ctx.restore()
 
             // 更新位置
@@ -392,6 +481,7 @@ export class GameScreen {
             this.runningStore.set(item.id, item)
         }
     }
+    private endingAnimationInstance: EndAnimation = null
     // 运动中
     private animation(lastTime: number) {
         //  this.removeOutScreenAndFillFullUserPool(runningStore)
@@ -404,7 +494,8 @@ export class GameScreen {
         this.computeEveryItemPositionAndDrawIt(runTimeInterval)
         requestAnimationFrame(() => {
             if (this.runningStore.size === 0) {
-                new EndAnimation(this.canvas, this.fixedBlockGroup, { asserts: this.asserts }, this.animationConfig.endingAnimation)
+                this.endingAnimationInstance = new EndAnimation(this.canvas, this.fixedBlockGroup, { asserts: this.asserts }, this.animationConfig.endingAnimation)
+                this.endingAnimationInstance.run()
                 return
             }
             this.animation(now)

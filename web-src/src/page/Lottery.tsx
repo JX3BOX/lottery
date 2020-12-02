@@ -4,9 +4,8 @@ import { Modal, Progress } from "antd"
 import { GameScreen } from "../lib/game"
 import "./lottery/index.scss"
 import { loadAsserts } from "../lib/utils"
-interface RouterProps {
-    settingId: string;   // This one is coming from the router
-}
+import * as neffos from "neffos.js"
+interface RouterProps { }
 
 interface IState {
     visible: boolean
@@ -16,6 +15,8 @@ interface IState {
 class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     private myRef: React.RefObject<any>
     private game: GameScreen = null
+    private nsConn: neffos.NSConn = null
+    private settingId: string = null
     constructor(props: RouteComponentProps<RouterProps>) {
         super(props)
         this.myRef = React.createRef();
@@ -24,10 +25,10 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
             percent: 0,
             size: 0
         }
+
     }
     // Setup 1 获取抽奖配置和用户信息
-    async prepareSetting() {
-        const id = this.props.match.params.settingId
+    async prepareSetting(id: string) {
         return fetch("/api/setting/prepare/" + id).then((response) => {
             if (response.status === 200) {
                 return response.json()
@@ -42,28 +43,61 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
             alert("获取抽奖规则错误:" + e.message)
         })
     }
+    // async componentDidUpdate(prevProps, prevState:IState) {
+    //     if(prevState.visible === false &&　this.state.visible){
 
+    //     }
+    // }
     async componentDidMount() {
+
         this.listenUserAction()
+        // const id = this.props.match.params.settingId
+        // this.start(id)
         const screenDom = this.myRef.current as HTMLCanvasElement
-        var setting: any = {}
+        this.game = new GameScreen(screenDom)
+        const conn = await neffos.dial(`ws://localhost:14422/sync-action`, {
+            default: { // "default" namespace.
+                next: (nsConn, msg) => { // "chat" event.
+                    this.settingId = msg.Body
+                    if (!this.animationHasStart) {
+                        this.start(msg.Body)
+                    } else {
+                        console.log("当初抽奖未完成，无法开启新一轮抽奖")
+                    }
+                }
+            }
+        });
+        // You can either wait to conenct or just conn.connect("connect")
+        // and put the `handleNamespaceConnectedConn` inside `_OnNamespaceConnected` callback instead.
+        // const nsConn = await conn.connect("default");
+        // nsConn.emit(...); handleNamespaceConnectedConn(nsConn);
+        this.nsConn = await conn.connect("default");
+
+    }
+    private animationHasStart = false
+    async start(id: string) {
+        if (this.game) {
+            this.game.end()
+        }
+        this.setState({ visible: true })
+        this.animationHasStart = true
+        var data: any = {}
         try {
-            setting = await this.prepareSetting()
+            data = await this.prepareSetting(id)
         } catch (e) {
             console.log(e)
             return
         }
-        if (!setting || !setting.userList) {
-            console.log(setting)
+        if (!data || !data.userList) {
+            console.log(data)
             return
         }
-
-
+        // const poolName = data.setting.pool
         const preloadAssets = [{
             name: "itemBg", source: "/item-bg.png"
-        }]
+        }, { name: "default_avatar", source: "/team_avatar.png" }]
 
-        setting.userList.forEach((user) => {
+        data.userList.forEach((user) => {
             preloadAssets.push({
                 name: "user_" + user.id,
                 source: user.avatar
@@ -71,15 +105,16 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
         })
         const totalSize = preloadAssets.length
         let loadedSize = 0
-        // this.setState({ size: totalSize })
         const asserts = await loadAsserts(preloadAssets, () => {
             loadedSize++
             let precent = Math.floor((loadedSize / totalSize) * 100)
             this.setState({ percent: precent })
         })
-        this.setState({ visible: false })
-        this.game = new GameScreen(screenDom, setting.userList, {
-            pickCountList: setting.setting.rule,
+
+
+        this.setState({ visible: false, percent: 0 })
+        this.game.start(data.userList, {
+            pickCountList: data.setting.rule,
             asserts: asserts
         }, {
             itemWidth: 160,
@@ -98,14 +133,13 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 usernameHeight: 20
             }
         })
-        this.game.start()
     }
     doLottery() {
         if (!this.game) {
             return
         }
         const store = this.game.stop()
-        const id = this.props.match.params.settingId
+        const id = this.settingId
         const luckyList = []
         const keys = store.keys()
         for (let key of keys) {
@@ -122,8 +156,12 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             }
-        }).then((resp) => { return resp.json() }).then((d) => { console.log(d) }).catch((e) => {
+        }).then((resp) => { return resp.json() }).then((d) => {
+            console.log(d)
+            this.nsConn.emit('finish', this.settingId)
+        }).catch((e) => {
             console.log(e)
+            this.nsConn.emit('finish', this.settingId)
             alert("抽奖失败！")
         })
     }
@@ -131,23 +169,24 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     listenUserAction() {
         var action = (even: KeyboardEvent) => {
             const keyName = even.key
+            if (!this.animationHasStart) {
+                console.log("抽奖还没开始，不能操作")
+                return
+            }
             switch (keyName) {
                 // 空格键抽奖
                 case " ":
+                    this.animationHasStart = false
                     this.doLottery()
-                    document.body.removeEventListener("keyup", action)
-                    break
-                // Esc键回到首页
-                case "Escape":
-                    document.body.removeEventListener("keyup", action)
-                    this.props.history.goBack()
                     break
             }
         }
-        document.body.addEventListener("keyup", action)
+        document.addEventListener("keyup", action)
 
     }
+
     render() {
+        const title = this.state.percent === 0 ? "抽奖" : "正在加载图片资源"
         return (
             <div className="screen">
                 <div className="stage">
@@ -157,7 +196,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                     <div className="screen-title"></div>
                 </div>
                 <Modal
-                    title={`正在加载图片资源`}
+                    title={title}
                     visible={this.state.visible}
                     centered={true}
                     closable={false}
@@ -165,7 +204,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                     keyboard={false}
                     maskClosable={false}
                 >
-                    <Progress percent={this.state.percent} />
+                    {this.state.percent === 0 ? <h2>抽奖准备中...</h2> : <Progress percent={this.state.percent} />}
                 </Modal>
             </div >
         )
