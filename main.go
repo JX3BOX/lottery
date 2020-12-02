@@ -14,6 +14,7 @@ import (
 	"github.com/huyinghuan/lottery/data"
 	"github.com/huyinghuan/lottery/database"
 	"github.com/kataras/iris/v12"
+	"github.com/kataras/iris/v12/websocket"
 )
 
 var Version = "Dev"
@@ -22,6 +23,36 @@ var BuildTime = time.Now().Format("2006-01-02 15:04:05")
 func GetApp() *iris.Application {
 	log.Println("启动服务")
 	app := iris.New()
+
+	var serverEvents = websocket.Namespaces{
+		"default": websocket.Events{
+			websocket.OnNamespaceConnected: func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				// with `websocket.GetContext` you can retrieve the Iris' `Context`.
+				ctx := websocket.GetContext(nsConn.Conn)
+
+				log.Printf("[%s] connected to namespace [%s] with IP [%s]",
+					nsConn, msg.Namespace,
+					ctx.RemoteAddr())
+				nsConn.Emit("next", []byte("11111"))
+				return nil
+			},
+			"next": func(nsConn *websocket.NSConn, msg websocket.Message) error {
+				// room.String() returns -> NSConn.String() returns -> Conn.String() returns -> Conn.ID()
+				log.Printf("[%s] sent: %s", nsConn, string(msg.Body))
+
+				// Write message back to the client message owner with:
+				nsConn.Emit("next", []byte("11111"))
+				// Write message to all except this client with:
+				nsConn.Conn.Server().Broadcast(nsConn, msg)
+				return nil
+			},
+		},
+	}
+	websocketServer := websocket.New(
+		websocket.DefaultGorillaUpgrader, /* DefaultGobwasUpgrader can be used too. */
+		serverEvents)
+	app.Get("/sync-action", websocket.Handler(websocketServer))
+
 	app.HandleDir("/", "static")
 
 	api := app.Party("/api", func(ctx iris.Context) {
@@ -46,6 +77,7 @@ func GetApp() *iris.Application {
 	api.Get("/setting/demo", c.Demo)
 	// 读取配置文件初始化数据到数据库
 	api.Get("/setting/config", c.ReadConfig)
+
 	return app
 }
 

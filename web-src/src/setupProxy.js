@@ -10,4 +10,11 @@ module.exports = function (app) {
             changeOrigin: true,
         })
     );
+    app.use(
+        '/sync-action',
+        createProxyMiddleware({
+            ws: true,
+            target: 'http://localhost:14422'
+        })
+    )
 };

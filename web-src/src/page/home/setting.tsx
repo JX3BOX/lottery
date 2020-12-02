@@ -2,6 +2,7 @@
 import React from 'react';
 import { Table, Space, Tag, Button, Form, InputNumber, Row, Col, Divider, Typography, Select } from "antd"
 import { withRouter, RouteComponentProps } from "react-router-dom"
+import * as neffos from "neffos.js"
 const { Title } = Typography;
 
 const { Option } = Select;
@@ -16,6 +17,7 @@ interface SettingItem {
 class Component extends React.Component<RouteComponentProps, IState> {
     constructor(props) {
         super(props)
+
         this.state = {
             settingList: [],
             awardList: [],
@@ -23,9 +25,20 @@ class Component extends React.Component<RouteComponentProps, IState> {
         }
     }
     private awardMap: any = {}
-    componentDidMount() {
+    async componentDidMount() {
         this.loadOptions()
         this.loadData()
+        const conn = await neffos.dial("ws://localhost:3000/sync-action", {
+            default: {
+                _OnNamespaceConnected: function (nsConn, msg) {
+                    nsConn.emit("Hello from browser client side!");
+                },
+                next: function (nsConn, msg) { // "chat" event.
+                    console.log(msg.Body, 999999);
+                }
+            }
+        })
+        conn.connect("default");
     }
     resetSetting(id) {
         const verityCode = prompt(`是否确定重置本次抽奖结果? 输入 ${id} 后确定`)
