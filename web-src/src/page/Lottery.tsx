@@ -4,6 +4,7 @@ import { Modal, Progress } from "antd"
 import { GameScreen } from "../lib/game"
 import "./lottery/index.scss"
 import { loadAsserts } from "../lib/utils"
+import * as neffos from "neffos.js"
 interface RouterProps {
     settingId: string;   // This one is coming from the router
 }
@@ -16,6 +17,7 @@ interface IState {
 class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     private myRef: React.RefObject<any>
     private game: GameScreen = null
+    private nsConn: neffos.NSConn = null
     constructor(props: RouteComponentProps<RouterProps>) {
         super(props)
         this.myRef = React.createRef();
@@ -26,8 +28,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
         }
     }
     // Setup 1 获取抽奖配置和用户信息
-    async prepareSetting() {
-        const id = this.props.match.params.settingId
+    async prepareSetting(id: string) {
         return fetch("/api/setting/prepare/" + id).then((response) => {
             if (response.status === 200) {
                 return response.json()
@@ -44,42 +45,71 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     }
 
     async componentDidMount() {
+        // const id = this.props.match.params.settingId
+        // this.start(id)
+
+        const conn = await neffos.dial(`ws://localhost:14422/sync-action`, {
+            default: { // "default" namespace.
+                next: (nsConn, msg) => { // "chat" event.
+                    console.log(msg.Body);
+                    this.start(msg.Body)
+                }
+            }
+        });
+        // You can either wait to conenct or just conn.connect("connect")
+        // and put the `handleNamespaceConnectedConn` inside `_OnNamespaceConnected` callback instead.
+        // const nsConn = await conn.connect("default");
+        // nsConn.emit(...); handleNamespaceConnectedConn(nsConn);
+        this.nsConn = await conn.connect("default");
+
+    }
+    private assertsPool: { [key: string]: Map<string, HTMLImageElement> } = {}
+    async start(id: string) {
+
         this.listenUserAction()
         const screenDom = this.myRef.current as HTMLCanvasElement
-        var setting: any = {}
+        var data: any = {}
         try {
-            setting = await this.prepareSetting()
+            data = await this.prepareSetting(id)
         } catch (e) {
             console.log(e)
             return
         }
-        if (!setting || !setting.userList) {
-            console.log(setting)
+        if (!data || !data.userList) {
+            console.log(data)
             return
+        }
+        const poolName = data.setting.pool
+
+        var asserts = this.assertsPool[poolName]
+        if (!asserts) {
+            const preloadAssets = [{
+                name: "itemBg", source: "/item-bg.png"
+            }]
+
+            data.userList.forEach((user) => {
+                preloadAssets.push({
+                    name: "user_" + user.id,
+                    source: user.avatar
+                })
+            })
+            const totalSize = preloadAssets.length
+            let loadedSize = 0
+            // this.setState({ size: totalSize })
+            asserts = await loadAsserts(preloadAssets, () => {
+                loadedSize++
+                let precent = Math.floor((loadedSize / totalSize) * 100)
+                this.setState({ percent: precent })
+            })
+            this.assertsPool[poolName] = asserts
+        } else {
+            this.setState({ percent: 100 })
         }
 
 
-        const preloadAssets = [{
-            name: "itemBg", source: "/item-bg.png"
-        }]
-
-        setting.userList.forEach((user) => {
-            preloadAssets.push({
-                name: "user_" + user.id,
-                source: user.avatar
-            })
-        })
-        const totalSize = preloadAssets.length
-        let loadedSize = 0
-        // this.setState({ size: totalSize })
-        const asserts = await loadAsserts(preloadAssets, () => {
-            loadedSize++
-            let precent = Math.floor((loadedSize / totalSize) * 100)
-            this.setState({ percent: precent })
-        })
         this.setState({ visible: false })
-        this.game = new GameScreen(screenDom, setting.userList, {
-            pickCountList: setting.setting.rule,
+        this.game = new GameScreen(screenDom, data.userList, {
+            pickCountList: data.setting.rule,
             asserts: asserts
         }, {
             itemWidth: 160,

@@ -15,9 +15,9 @@ interface SettingItem {
 
 }
 class Component extends React.Component<RouteComponentProps, IState> {
+    private nsConn: neffos.NSConn = null
     constructor(props) {
         super(props)
-
         this.state = {
             settingList: [],
             awardList: [],
@@ -28,17 +28,18 @@ class Component extends React.Component<RouteComponentProps, IState> {
     async componentDidMount() {
         this.loadOptions()
         this.loadData()
-        const conn = await neffos.dial("ws://localhost:3000/sync-action", {
-            default: {
-                _OnNamespaceConnected: function (nsConn, msg) {
-                    nsConn.emit("Hello from browser client side!");
-                },
+        const conn = await neffos.dial(`ws://localhost:14422/sync-action`, {
+            default: { // "default" namespace.
                 next: function (nsConn, msg) { // "chat" event.
-                    console.log(msg.Body, 999999);
+                    console.log(msg.Body);
                 }
             }
-        })
-        conn.connect("default");
+        });
+        // You can either wait to conenct or just conn.connect("connect")
+        // and put the `handleNamespaceConnectedConn` inside `_OnNamespaceConnected` callback instead.
+        // const nsConn = await conn.connect("default");
+        // nsConn.emit(...); handleNamespaceConnectedConn(nsConn);
+        this.nsConn = await conn.connect("default");
     }
     resetSetting(id) {
         const verityCode = prompt(`是否确定重置本次抽奖结果? 输入 ${id} 后确定`)
@@ -114,7 +115,9 @@ class Component extends React.Component<RouteComponentProps, IState> {
                 return record.status === 0 ? (
                     <Space size="middle" >
                         <Button type="link" onClick={() => { this.goto(`/lottery/${record.id}`) }}>去抽奖</Button>
-                    </Space>) :
+                        <Button type="link" onClick={() => { this.startLotter(record.id) }}>启动该轮</Button>
+                    </Space>
+                ) :
                     (<Space size="middle" >
                         <Button type="link" style={{ color: 'green' }}>完成</Button>
                     </Space>
@@ -124,6 +127,9 @@ class Component extends React.Component<RouteComponentProps, IState> {
     ]
     goto(url) {
         this.props.history.push(url)
+    }
+    startLotter(id: number) {
+        this.nsConn.emit("next", id + "")
     }
     onFinish(v) {
         console.log(v)

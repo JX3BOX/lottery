@@ -6,8 +6,10 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
+	github.com/gorilla/websocket v1.4.1
 	github.com/imkira/go-interpol v1.1.0 // indirect
 	github.com/kataras/iris/v12 v12.1.8
+	github.com/kataras/neffos v0.0.14
 	github.com/mattn/go-sqlite3 v1.14.4
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect

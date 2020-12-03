@@ -4,6 +4,7 @@ import (
 	"context"
 	"flag"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,10 +12,12 @@ import (
 
 	"github.com/huyinghuan/lottery/c"
 
+	gorillaWs "github.com/gorilla/websocket"
 	"github.com/huyinghuan/lottery/data"
 	"github.com/huyinghuan/lottery/database"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/websocket"
+	"github.com/kataras/neffos/gorilla"
 )
 
 var Version = "Dev"
@@ -28,12 +31,7 @@ func GetApp() *iris.Application {
 		"default": websocket.Events{
 			websocket.OnNamespaceConnected: func(nsConn *websocket.NSConn, msg websocket.Message) error {
 				// with `websocket.GetContext` you can retrieve the Iris' `Context`.
-				ctx := websocket.GetContext(nsConn.Conn)
-
-				log.Printf("[%s] connected to namespace [%s] with IP [%s]",
-					nsConn, msg.Namespace,
-					ctx.RemoteAddr())
-				nsConn.Emit("next", []byte("11111"))
+				log.Println("websock 建立连接")
 				return nil
 			},
 			"next": func(nsConn *websocket.NSConn, msg websocket.Message) error {
@@ -41,7 +39,7 @@ func GetApp() *iris.Application {
 				log.Printf("[%s] sent: %s", nsConn, string(msg.Body))
 
 				// Write message back to the client message owner with:
-				nsConn.Emit("next", []byte("11111"))
+				// nsConn.Emit("next", []byte("11111"))
 				// Write message to all except this client with:
 				nsConn.Conn.Server().Broadcast(nsConn, msg)
 				return nil
@@ -49,12 +47,11 @@ func GetApp() *iris.Application {
 		},
 	}
 	websocketServer := websocket.New(
-		websocket.DefaultGorillaUpgrader, /* DefaultGobwasUpgrader can be used too. */
+		gorilla.Upgrader(gorillaWs.Upgrader{CheckOrigin: func(*http.Request) bool { return true }}), /* DefaultGobwasUpgrader can be used too. */
 		serverEvents)
-	app.Get("/sync-action", websocket.Handler(websocketServer))
 
 	app.HandleDir("/", "static")
-
+	app.Get("/sync-action", websocket.Handler(websocketServer))
 	api := app.Party("/api", func(ctx iris.Context) {
 		// 禁止其他ip TODO
 		ctx.Next()
