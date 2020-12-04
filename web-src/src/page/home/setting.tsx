@@ -149,6 +149,9 @@ class Component extends React.Component<RouteComponentProps, IState> {
             alert("请填写相关数据！")
             return
         }
+        if (!v.repeat || v.repeat < 1) {
+            v.repeat = 1
+        }
         const data = {
             pool: v.pool,
             rule: [{
@@ -159,12 +162,22 @@ class Component extends React.Component<RouteComponentProps, IState> {
             }]
         }
         console.log(data)
-        fetch("/api/setting", { method: "POST", body: JSON.stringify(data) }).then((response) => { return response.json() }).then((d) => {
-            console.log(d)
+        var list = []
+        for (var i = 0; i < v.repeat; i++) {
+            list.push(fetch("/api/setting", { method: "POST", body: JSON.stringify(data) }))
+        }
+        Promise.all(list).then(() => {
             this.loadData()
         }).catch((e) => {
             alert(e)
         })
+
+        // fetch("/api/setting", { method: "POST", body: JSON.stringify(data) }).then((response) => { return response.json() }).then((d) => {
+        //     console.log(d)
+        //     this.loadData()
+        // }).catch((e) => {
+        //     alert(e)
+        // })
     }
     render() {
         return (<Row style={{ height: "900px", overflow: "auto" }}>
@@ -193,6 +206,9 @@ class Component extends React.Component<RouteComponentProps, IState> {
                     </Form.Item>
                     <Form.Item name="count" label="抽取人数">
                         <InputNumber placeholder="数量" type="number" style={{ width: 150 }} />
+                    </Form.Item>
+                    <Form.Item name="repeat" label="抽取次数">
+                        <InputNumber placeholder="抽取次数" type="number" style={{ width: 150 }} />
                     </Form.Item>
                     <Form.Item>
                         <Button type="primary" htmlType="submit">新增</Button>
