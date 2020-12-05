@@ -28,7 +28,8 @@ class Component extends React.Component<RouteComponentProps, IState> {
     async componentDidMount() {
         this.loadOptions()
         this.loadData()
-        const conn = await neffos.dial(`ws://localhost:14422/sync-action`, {
+
+        const conn = await neffos.dial(`ws://${window.location.host}/sync-action`, {
             default: { // "default" namespace.
                 finish: (nsConn, msg) => { // "chat" event.
                     console.log("完成抽奖:", msg.Body);

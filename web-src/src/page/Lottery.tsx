@@ -55,7 +55,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
         // this.start(id)
         const screenDom = this.myRef.current as HTMLCanvasElement
         this.game = new GameScreen(screenDom)
-        const conn = await neffos.dial(`ws://localhost:14422/sync-action`, {
+        const conn = await neffos.dial(`ws://${window.location.host}/sync-action`, {
             default: { // "default" namespace.
                 next: (nsConn, msg) => { // "chat" event.
                     this.settingId = msg.Body
@@ -128,7 +128,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                 columnItemCount: 5,
                 marginX: 10,
                 marginY: 10,
-                runTime: 3,
+                runTime: 1.5,
                 fontStyle: `20px Arial`,
                 usernameHeight: 20
             }
@@ -186,7 +186,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     }
 
     render() {
-        const title = this.state.percent === 0 ? "抽奖" : "正在加载图片资源"
+        const title = this.state.percent === 0 ? "抽奖" : "抽奖启动中..."
         return (
             <div className="screen">
                 <div className="stage">
@@ -204,7 +204,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                     keyboard={false}
                     maskClosable={false}
                 >
-                    {this.state.percent === 0 ? <h2>抽奖准备中...</h2> : <Progress percent={this.state.percent} />}
+                    {this.state.percent === 0 ? <h2>准备中...</h2> : <Progress percent={this.state.percent} />}
                 </Modal>
             </div >
         )
