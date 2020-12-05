@@ -79,6 +79,9 @@ class Component extends React.Component<RouteComponentProps, IState> {
             }
         }).catch((e) => { alert(e) })
     }
+    postToServer(record) {
+
+    }
     private columns = [
         {
             title: "序号",
@@ -114,16 +117,30 @@ class Component extends React.Component<RouteComponentProps, IState> {
             title: '操作',
             key: 'action',
             render: (text, record) => {
-                return record.status === 0 ? (
-                    <Space size="middle" >
-
-                        <Button type="link" onClick={() => { this.startLotter(record) }}>启动该轮</Button>
-                    </Space>
-                ) :
-                    (<Space size="middle" >
-                        <Button type="link" style={{ color: 'green' }}>完成</Button>
-                    </Space>
+                var list = []
+                if (record.status === 0) {
+                    return (
+                        <Space size="middle" >
+                            <Button type="link" onClick={() => { this.startLotter(record) }}>启动该轮</Button>
+                        </Space>
                     )
+                }
+                list.push(<Button type="link" style={{ color: 'green' }}>完成</Button>)
+
+                // if (record.status === 1) {
+                //     list.push(<Button type="link" onClick={() => { this.postToServer(record) }}>上传到远程服务器</Button>)
+                // }
+                // if (record.status === 2) {
+                //     <Button type="link" style={{ color: 'green' }}>已上传</Button>
+                // }
+
+                return (
+                    <Space size="middle" >
+                        {list.map(record => {
+                            return record
+                        })}
+                    </Space>
+                )
             }
         },
     ]

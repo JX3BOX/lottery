@@ -22,9 +22,9 @@ cd web-src
 yarn install
 yarn build
 cp -r build ../release/win64/static
-cp -r build ../release/${machine}/static
-cd ..
-cd release/win64
-tar -czf ../win64.tar.gz .
-cd ../${machine}
-tar -czf ../${machine}.tar.gz .
+#cp -r build ../release/${machine}/static
+#cd ..
+#cd release/win64
+#tar -czf ../win64.tar.gz .
+# cd ../${machine}
+# tar -czf ../${machine}.tar.gz .
