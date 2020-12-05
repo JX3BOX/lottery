@@ -8,6 +8,12 @@ type LuckyPeople struct {
 	SettingId int64 `xorm:"'setting_id'" json:"setting_id"` // 第几次抽奖中的奖
 }
 
+type LuckyPeopleExtend struct {
+	LuckyPeople `xorm:"extends"`
+	UID         int64  `xorm:"uid"`
+	Name        string `xorm:"name"`
+}
+
 func (l LuckyPeople) TableName() string {
 	return "lucky_people"
 }
