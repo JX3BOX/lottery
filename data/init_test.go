@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/huyinghuan/lottery/database"
+	"github.com/jx3box/lottery/database"
 )
 
 func TestInsertUser(t *testing.T) {

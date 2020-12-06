@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/huyinghuan/lottery/database/v"
+	"github.com/jx3box/lottery/database/v"
 
 	"github.com/kataras/iris/v12"
 )

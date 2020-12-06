@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/database/schema"
 )
 
 // GenerateDemoData 生成测试数据

@@ -12,7 +12,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/database/schema"
 )
 
 func getMD5Hash(text string) string {

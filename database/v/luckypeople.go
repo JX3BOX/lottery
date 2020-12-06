@@ -1,8 +1,8 @@
 package v
 
 import (
-	"github.com/huyinghuan/lottery/database"
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/database"
+	"github.com/jx3box/lottery/database/schema"
 )
 
 func InsertLuckyPeople(settingId int64, awardId int64, userIds []int64) (int64, error) {

@@ -10,11 +10,10 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/huyinghuan/lottery/c"
-
 	gorillaWs "github.com/gorilla/websocket"
-	"github.com/huyinghuan/lottery/data"
-	"github.com/huyinghuan/lottery/database"
+	"github.com/jx3box/lottery/c"
+	"github.com/jx3box/lottery/data"
+	"github.com/jx3box/lottery/database"
 	"github.com/kataras/iris/v12"
 	"github.com/kataras/iris/v12/websocket"
 	"github.com/kataras/neffos/gorilla"

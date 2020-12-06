@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/huyinghuan/lottery/database"
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/database"
+	"github.com/jx3box/lottery/database/schema"
 )
 
 func formatRuleContent(content string, awardIDMap map[int64]schema.Award) ([]schema.SettingRule, error) {

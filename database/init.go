@@ -5,7 +5,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/database/schema"
 	_ "github.com/mattn/go-sqlite3"
 	"xorm.io/xorm"
 )

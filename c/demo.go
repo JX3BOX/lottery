@@ -3,7 +3,7 @@ package c
 import (
 	"io/ioutil"
 
-	"github.com/huyinghuan/lottery/data"
+	"github.com/jx3box/lottery/data"
 	"github.com/kataras/iris/v12"
 )
 

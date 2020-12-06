@@ -5,8 +5,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/huyinghuan/lottery/database"
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/database"
+	"github.com/jx3box/lottery/database/schema"
 )
 
 // 获取待抽奖的用户池

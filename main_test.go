@@ -8,10 +8,10 @@ import (
 	"os"
 	"testing"
 
-	"github.com/huyinghuan/lottery/c"
-	"github.com/huyinghuan/lottery/data"
-	"github.com/huyinghuan/lottery/database"
-	"github.com/huyinghuan/lottery/database/schema"
+	"github.com/jx3box/lottery/c"
+	"github.com/jx3box/lottery/data"
+	"github.com/jx3box/lottery/database"
+	"github.com/jx3box/lotterydatabase/schema"
 	"github.com/kataras/iris/v12/httptest"
 )
 

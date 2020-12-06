@@ -1,4 +1,4 @@
-module github.com/huyinghuan/lottery
+module github.com/jx3box/lottery
 
 go 1.15
 

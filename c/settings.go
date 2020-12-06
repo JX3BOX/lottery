@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"log"
 
-	"github.com/huyinghuan/lottery/database"
-	"github.com/huyinghuan/lottery/database/schema"
-	"github.com/huyinghuan/lottery/database/v"
+	"github.com/jx3box/lottery/database"
+	"github.com/jx3box/lottery/database/schema"
+	"github.com/jx3box/lottery/database/v"
 	"github.com/kataras/iris/v12"
 )
 

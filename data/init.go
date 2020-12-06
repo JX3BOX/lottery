@@ -8,9 +8,8 @@ import (
 	"path"
 	"strings"
 
-	"github.com/huyinghuan/lottery/database/schema"
-
-	"github.com/huyinghuan/lottery/database"
+	"github.com/jx3box/lottery/database"
+	"github.com/jx3box/lottery/database/schema"
 )
 
 func getFilePath(u string) string {
