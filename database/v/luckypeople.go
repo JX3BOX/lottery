@@ -15,7 +15,18 @@ func InsertLuckyPeople(settingId int64, awardId int64, userIds []int64) (int64, 
 		})
 	}
 	db := database.Get()
-	return db.Insert(queue)
+	session := db.NewSession()
+	defer session.Close()
+
+	// 已中奖人员不重复中奖
+	if _, err := session.In("id", userIds).Cols("status").Update(schema.User{Status: 1}); err != nil {
+		return 0, err
+	}
+	effect, err := session.Insert(queue)
+	if err != nil {
+		return 0, err
+	}
+	return effect, session.Commit()
 }
 
 type LuckyPeopleExtend struct {

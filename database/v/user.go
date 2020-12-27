@@ -16,20 +16,6 @@ func GetUserListByPool(pool string) (list []schema.User, err error) {
 	return
 }
 
-/*
-   // 打乱数组 洗牌
-   private shuffle(list: Array<any>) {
-       var m = list.length
-       var t, i: any;
-       while (m) {
-           i = Math.floor(Math.random() * m--);
-           t = list[m];
-           list[m] = list[i];
-           list[i] = t;
-       }
-       return list;
-   }
-*/
 // 打乱数组 洗牌
 func shuffle(list []int64) {
 	rand.Seed(time.Now().UnixNano())
