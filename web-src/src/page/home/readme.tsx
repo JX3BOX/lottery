@@ -1,8 +1,8 @@
 import React from 'react';
 
-import { Typography, Divider } from 'antd';
+import { Typography } from 'antd';
 
-const { Title, Paragraph, Text, Link } = Typography;
+const { Title, Paragraph } = Typography;
 
 export default class Component extends React.Component {
 
