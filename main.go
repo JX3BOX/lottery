@@ -104,12 +104,14 @@ func main() {
 
 	if genDemoData || DemoData == "true" {
 		data.GenerateDemoData()
+		return
 	}
 
 	database.InitDriver()
 	if initData || InitData == "true" {
 		// 初始化用户数据和奖品数据
 		data.InitData()
+		return
 	}
 
 	app := GetApp()

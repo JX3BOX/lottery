@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"strings"
 
 	"github.com/jx3box/lottery/database"
 	"github.com/jx3box/lottery/database/schema"
@@ -23,51 +22,27 @@ func initPoolUserData() {
 	os.MkdirAll(getFilePath("static/avatar"), 0777)
 	db := database.Get()
 	db.Where("id > 0").Delete(new(schema.User))
-	fileList, err := ioutil.ReadDir(getFilePath("conf/user"))
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	for _, file := range fileList {
-		if file.IsDir() {
-			continue
-		}
-		filename := file.Name()
-		fileArr := strings.Split(filename, ".")
-
-		if fileArr[len(fileArr)-1] != "json" {
-			continue
-		}
-		pollName := fileArr[0]
-		initUserData(filename, pollName)
-	}
+	initUserData("conf/user.json")
 }
 
-func initUserData(filename string, pollName string) {
+func initUserData(filename string) {
 	db := database.Get()
-	userBody, err := ioutil.ReadFile(getFilePath("conf/user/" + filename))
+	userBody, err := ioutil.ReadFile(getFilePath(filename))
 	if err != nil {
 		log.Fatal(err)
 	}
 	var userList []schema.User
 	json.Unmarshal(userBody, &userList)
-
+	poolMap := make(map[string]int)
 	for _, user := range userList {
-		user.Pool = pollName
 		download(&user, getFilePath("static/avatar"))
 		if _, err := db.Insert(user); err != nil {
 			log.Println(err)
 		}
+		poolMap[user.Pool] = poolMap[user.Pool] + 1
 	}
-	insertSuccessCount, err := db.Where("pool = ?", pollName).Count(new(schema.User))
-	if err != nil {
-		log.Fatal(err)
-	}
-	if insertSuccessCount != int64(len(userList)) {
-		log.Printf("%s 插入用户数量 %d != %d 实际配置数据", pollName, insertSuccessCount, len(userList))
-	} else {
-		log.Printf("%s 成功插入用户数据 %d 条\n", pollName, insertSuccessCount)
+	for pool, count := range poolMap {
+		log.Printf("%s 成功插入用户数据 %d 条\n", pool, count)
 	}
 }
 func initAwardData() {

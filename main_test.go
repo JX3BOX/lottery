@@ -11,7 +11,7 @@ import (
 	"github.com/jx3box/lottery/c"
 	"github.com/jx3box/lottery/data"
 	"github.com/jx3box/lottery/database"
-	"github.com/jx3box/lotterydatabase/schema"
+	"github.com/jx3box/lottery/database/schema"
 	"github.com/kataras/iris/v12/httptest"
 )
 
