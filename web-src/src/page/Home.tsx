@@ -31,9 +31,9 @@ class Page extends React.Component<RouteComponentProps, IState> {
                         <Menu.Item key="1"><Link to="https://www.jx3box.com">JX3BOX</Link> </Menu.Item>
                         <Menu.Item key="12"><Link to={`${path}/`}>抽奖ing</Link></Menu.Item>
                         <Menu.Item key="2"><Link to={`${path}/lucky`}>中奖名单</Link></Menu.Item>
-                        <Menu.Item key="3"><Link to={`${path}/award`}>奖品配置</Link> </Menu.Item>
+                        {/* <Menu.Item key="3"><Link to={`${path}/award`}>奖品配置</Link> </Menu.Item> */}
                         {/* <Menu.Item key="5">用户池配置</Menu.Item> */}
-                        <Menu.Item key="6"><Link to={`${path}/config`}>高级配置</Link></Menu.Item>
+                        {/* <Menu.Item key="6"><Link to={`${path}/config`}>高级配置</Link></Menu.Item> */}
                         <Menu.Item key="7"><Link to={`${path}/readme`}>操作说明</Link> </Menu.Item>
                     </Menu>
                 </Header>
