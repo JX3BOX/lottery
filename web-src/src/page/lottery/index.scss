@@ -4,6 +4,7 @@
   margin: 0 auto;
   overflow: hidden;
 } */
+$static-url: "https://img.jx3box.com/topic/lottery";
 
 #root {
   width: 100vw;
@@ -30,7 +31,7 @@
     width: 1920px;
     height: 1080px;
     position: relative;
-    background-image: url("https://img.jx3box.com/topic/lottery/cover.png");
+    background-image: url("#{$static-url}/cover.png");
     background-repeat: no-repeat;
     background-size: 100% 100%; /* 将背景图像拉伸以填充整个元素 */
 

@@ -19,7 +19,6 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
   private game: GameScreen = null;
   private nsConn: neffos.NSConn = null;
   private settingId: string = null;
-  private resourceUrl: string = "https://img.jx3box.com/topic/lottery";
   constructor(props: RouteComponentProps<RouterProps>) {
     super(props);
     this.myRef = React.createRef();
@@ -104,7 +103,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     const preloadAssets = [
       {
         name: "itemBg",
-        source: `${this.resourceUrl}/item-bg.png`,
+        source: `${process.env.REACT_APP_STATIC_URL}/item-bg.png`,
       },
       { name: "default_avatar", source: "/team_avatar.png" },
     ];
@@ -239,7 +238,10 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
     return (
       <>
         <video id="background-video" loop autoPlay muted>
-          <source src={`${this.resourceUrl}/background.mp4`} type="video/mp4" />
+          <source
+            src={`${process.env.REACT_APP_STATIC_URL}/background.mp4`}
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
         <div className="screen-box">
@@ -250,7 +252,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
               {this.state.isLotteryActive && (
                 <img
                   className="boss-img"
-                  src={`${this.resourceUrl}/boss_bg.png`}
+                  src={`${process.env.REACT_APP_STATIC_URL}/boss_bg.png`}
                 />
               )}
             </div>
@@ -263,7 +265,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                   onClick={() => this.onStartLottery()}
                   width={375}
                   height={86}
-                  src={`${this.resourceUrl}/start_btn.png`}
+                  src={`${process.env.REACT_APP_STATIC_URL}/start_btn.png`}
                   alt=""
                 />
               ) : (
@@ -271,7 +273,7 @@ class Page extends React.Component<RouteComponentProps<RouterProps>, IState> {
                   onClick={() => this.onStopLottery()}
                   width={375}
                   height={86}
-                  src={`${this.resourceUrl}/stop_btn.png`}
+                  src={`${process.env.REACT_APP_STATIC_URL}/stop_btn.png`}
                   alt=""
                 />
               )}
