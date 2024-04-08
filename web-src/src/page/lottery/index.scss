@@ -1,26 +1,141 @@
-.screen{
-    width: 100%;
-    height: 100%;
+/* #root {
+  width: 1920px;
+  height: 1080px;
+  margin: 0 auto;
+  overflow: hidden;
+} */
+
+#root {
+  width: 100vw;
+  height: 100vh;
+}
+
+#background-video {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  object-fit: cover;
+}
+.screen-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+
+  .screen {
+    width: 1920px;
+    height: 1080px;
     position: relative;
-    .screen-cover{
+    background-image: url("https://img.jx3box.com/topic/lottery/cover.png");
+    background-repeat: no-repeat;
+    background-size: 100% 100%; /* 将背景图像拉伸以填充整个元素 */
+
+    .stage {
+      position: absolute;
+      top: 250px;
+      left: 0;
+      z-index: 99;
+      background: rgba(63, 81, 97, 1);
+      .boss-img {
         position: absolute;
-        top:0;
-        left:0;
-        width: 100%;
-        height: 100%;
-        background-image: url("./image/cover.png");
-        .screen-title{
-            width: 1025px;
-            height: 246px;
-            margin: 0 auto;
-            background-image: url("./image/title.png");
+        transform: translate(-50%, -48%);
+        width: 1500px;
+        left: 50%;
+        top: 50%;
+        z-index: -99;
+      }
+    }
+    .action {
+      position: absolute;
+      z-index: 99;
+      bottom: 20px;
+      left: 50%;
+      text-align: center;
+      transform: translateX(-50%);
+      img {
+        margin-bottom: 10px;
+        cursor: pointer;
+      }
+      p {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+    }
+
+    .speed-box {
+      position: absolute;
+      z-index: 99;
+      bottom: 40px;
+      left: 140px;
+      display: flex;
+      gap: 18px;
+      .tip-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        .text {
+          color: white;
+          font-size: 18px;
+          margin-bottom: 0;
         }
+        .speed-num {
+          margin-bottom: 0;
+          font-size: 60px;
+          line-height: 85px;
+          color: rgba(249, 229, 187, 1);
+        }
+      }
+
+      .triangle-box {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        .triangle-up {
+          cursor: pointer;
+          width: 45px;
+          height: 45px;
+          border: 2px solid white;
+          position: relative;
+        }
+
+        .triangle-up::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 0;
+          height: 0;
+          border-left: 15px solid transparent;
+          border-right: 15px solid transparent;
+          border-bottom: 15px solid white; /* 高度是底边长度的正弦值，假设底边长度是 100px */
+        }
+        .triangle-down {
+          cursor: pointer;
+          width: 45px;
+          height: 45px;
+          border: 2px solid white;
+          position: relative;
+        }
+
+        .triangle-down::after {
+          content: "";
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 0;
+          height: 0;
+          border-left: 15px solid transparent;
+          border-right: 15px solid transparent;
+          border-top: 15px solid white; /* 高度是底边长度的正弦值，假设底边长度是 100px */
+        }
+      }
     }
-    .stage{
-       position: absolute;
-       top: 112px;
-       left: 132px;
-       width: 1664px;
-       height: 874px;
-    }
+  }
 }
